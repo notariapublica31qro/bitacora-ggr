@@ -36,7 +36,7 @@
     .btn:hover{opacity:.82;}
     .btn-primary{background:var(--accent);color:#fff;}
     .btn-secondary{background:#334155;color:var(--text);}
-    .error-msg{color:var(--red);font-size:.8rem;margin-top:12px;display:none;text-align:center;}
+    .error-msg{color:var(--red);font-size:.75rem;margin-top:12px;display:none;text-align:left;white-space:pre-wrap;font-family:monospace;}
     .footer{margin-top:28px;color:#475569;font-size:.72rem;text-align:center;}
   </style>
 </head>
@@ -416,7 +416,10 @@ async function handleFile(file){
     document.getElementById('statsBox').style.display='block';
     document.getElementById('actions').style.display='flex';
   }catch(err){
-    setProgress(0,'');showError('Error al procesar: '+err.message);console.error(err);
+    setProgress(0,'');
+    const stack=(err.stack||'').split('\n').slice(0,6).join('\n');
+    showError('Error: '+err.message+'\n\n'+stack);
+    console.error(err);
   }
 }
 
