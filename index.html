@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador Bitácora GGR — Notaría 31</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f172a;--surface:#1e293b;--accent:#6c8ef5;--text:#e2e8f0;--muted:#94a3b8;--green:#16a34a;--red:#ef4444;--yellow:#d97706;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+    .logo{font-size:1.5rem;font-weight:900;color:var(--accent);margin-bottom:6px;letter-spacing:-.5px;}
+    .subtitle{color:var(--muted);font-size:.82rem;margin-bottom:36px;text-align:center;}
+    .card{background:var(--surface);border-radius:16px;padding:36px;width:100%;max-width:500px;box-shadow:0 4px 40px rgba(0,0,0,.5);}
+    .drop-zone{border:2px dashed #334155;border-radius:12px;padding:52px 24px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+    .drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(108,142,245,.07);}
+    .drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+    .drop-icon{font-size:2.8rem;margin-bottom:14px;}
+    .drop-title{font-weight:800;font-size:1rem;margin-bottom:6px;}
+    .drop-hint{color:var(--muted);font-size:.78rem;line-height:1.5;}
+    .progress-wrap{margin-top:22px;display:none;}
+    .progress-bar-bg{background:#0f172a;border-radius:8px;height:7px;overflow:hidden;margin-bottom:8px;}
+    .progress-bar{background:var(--accent);height:100%;border-radius:8px;transition:width .3s;width:0%;}
+    .progress-label{color:var(--muted);font-size:.76rem;text-align:center;}
+    .stats{margin-top:18px;display:none;background:#0f172a;border-radius:10px;padding:14px 16px;}
+    .stats-row{display:flex;justify-content:space-between;font-size:.8rem;}
+    .stats-row+.stats-row{margin-top:7px;}
+    .stat-label{color:var(--muted);}
+    .stat-val{font-weight:700;}
+    .stat-green{color:var(--green);}
+    .stat-red{color:var(--red);}
+    .actions{display:none;gap:10px;margin-top:18px;}
+    .btn{flex:1;padding:12px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:.85rem;font-family:'Inter',sans-serif;transition:opacity .18s;}
+    .btn:hover{opacity:.82;}
+    .btn-primary{background:var(--accent);color:#fff;}
+    .btn-secondary{background:#334155;color:var(--text);}
+    .error-msg{color:var(--red);font-size:.8rem;margin-top:12px;display:none;text-align:center;}
+    .footer{margin-top:28px;color:#475569;font-size:.72rem;text-align:center;}
+  </style>
+</head>
+<body>
+  <div class="logo">⚖️ Bitácora GGR</div>
+  <div class="subtitle">Notaría Pública No. 31 — Querétaro<br>Sube tu bitácora para generar el reporte interactivo</div>
+
+  <div class="card">
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" accept=".xlsx">
+      <div class="drop-icon">📂</div>
+      <div class="drop-title">Arrastra tu bitácora aquí</div>
+      <div class="drop-hint">o haz clic para seleccionar el .xlsx exportado de Integranot</div>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-label" id="progressLabel">Procesando…</div>
+    </div>
+
+    <div class="stats" id="statsBox">
+      <div class="stats-row"><span class="stat-label">Total escrituras</span><span class="stat-val" id="s-total">—</span></div>
+      <div class="stats-row"><span class="stat-label">Pendientes GGR</span><span class="stat-val stat-red" id="s-pend">—</span></div>
+      <div class="stats-row"><span class="stat-label">Filas etiquetadas</span><span class="stat-val stat-green" id="s-etiq">—</span></div>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="actions" id="actions">
+      <button class="btn btn-primary" onclick="verReporte()">📊 Ver Reporte</button>
+      <button class="btn btn-secondary" onclick="descargarXlsx()">📥 Descargar xlsx etiquetado</button>
+    </div>
+  </div>
+
+  <div class="footer">Los datos nunca salen de tu navegador — procesamiento 100% local</div>
+
+<script>
+'use strict';
+let _wb = null;
+
+// ── Helpers de fecha ──────────────────────────────────────────────────────
+function parseStrDate(s){
+  if(typeof s!=='string')return null;
+  s=s.trim();
+  if(!s||s==='-'||s==='*')return null;
+  let m;
+  m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);if(m)return new Date(+m[3],+m[2]-1,+m[1]);
+  m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+  m=s.match(/^(\d{2})-(\d{2})-(\d{4})$/);if(m)return new Date(+m[3],+m[2]-1,+m[1]);
+  return null;
+}
+function isDt(v){if(v instanceof Date)return!isNaN(v.getTime());if(typeof v==='string')return parseStrDate(v)!==null;return false;}
+function toDt(v){if(v instanceof Date)return v;if(typeof v==='string')return parseStrDate(v);return null;}
+function isDash(v){return typeof v==='string'&&v.trim()==='-';}
+function isStar(v){return typeof v==='string'&&v.trim()==='*';}
+function isEmpty(v){if(v===null||v===undefined)return true;if(typeof v==='string'&&v.trim()==='')return true;return false;}
+function hasDate(v){return isDt(v);}
+function noDate(v){return!isDt(v);}
+function pendingNoDash(v){return isEmpty(v)||isStar(v);}
