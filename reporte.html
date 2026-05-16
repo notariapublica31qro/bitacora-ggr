@@ -639,6 +639,16 @@ th.col-tr, td.col-tr{width:240px;text-align:center;font-size:.84rem;font-weight:
 
 <script>
 const DATA = JSON.parse(sessionStorage.getItem('ggr_data') || 'null') || {t:{total:0,traslativas:0,no_traslativas:0,concluido:0,pendientes:0,pct_concluido:0},es:{},ab:{},se:{foraneas:0,constructoras:0,con_bancos:0,con_infonavit:0,con_fovissste:0},me:{},tr:{},al:{td:[],rpp45:[],firmas:[],rpp90:[],pe:[],bancos:[],infonavit:[],fovissste:[],td_pv:[],rpp90solo:[],bancos90:[],infonavit90:[],fovissste90:[]},pe:[]};
+// DIAGNÓSTICO TEMPORAL — remover después
+document.addEventListener('DOMContentLoaded',function(){
+  const _t=DATA.t&&DATA.t.total||0;
+  const _keys=Object.keys(sessionStorage).filter(k=>k.startsWith('ggr_'));
+  const _dbg=document.createElement('div');
+  _dbg.id='_dbg_ss';
+  _dbg.style='position:fixed;bottom:8px;right:8px;background:#0f172a;border:1px solid #6c8ef5;color:#e2e8f0;padding:8px 12px;border-radius:8px;font-size:.72rem;font-family:monospace;z-index:9999;';
+  _dbg.textContent='SS keys: '+_keys.length+' | DATA.t.total: '+_t;
+  document.body.appendChild(_dbg);
+});
 const DATA_ME = JSON.parse(sessionStorage.getItem('ggr_data_me') || '{}');
 const DATA_YR = JSON.parse(sessionStorage.getItem('ggr_data_yr') || '{}');
 const DATA_AB_ME = JSON.parse(sessionStorage.getItem('ggr_data_ab_me') || '{}');
