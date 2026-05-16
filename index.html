@@ -237,7 +237,7 @@ function diasHabiles(s,e){
 // ── Procesamiento principal ────────────────────────────────────────────────
 function processWorkbook(wb){
   const ws=wb.Sheets[wb.SheetNames[0]];
-  const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true});
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'yyyy-mm-dd'});
   const header=rows[0];
   const H={};header.forEach((h,i)=>{if(h)H[h]=i;});
 
@@ -390,7 +390,7 @@ async function handleFile(file){
   try{
     const buf=await file.arrayBuffer();
     setProgress(30,'Procesando escrituras…');await new Promise(r=>setTimeout(r,50));
-    const wb=XLSX.read(buf,{type:'array',cellDates:true,dateNF:'yyyy-mm-dd'});
+    const wb=XLSX.read(buf,{type:'array'});
     setProgress(60,'Aplicando reglas de etiquetado…');await new Promise(r=>setTimeout(r,50));
     const res=processWorkbook(wb);
     setProgress(85,'Guardando datos del reporte…');await new Promise(r=>setTimeout(r,50));
