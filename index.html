@@ -450,7 +450,7 @@ function processWorkbook(rows){
   // Reconstruir workbook modificado
   const newWb=XLSX.utils.book_new();
   const newWs=XLSX.utils.aoa_to_sheet(modRows);
-  XLSX.utils.book_append_sheet(newWb,'Bitácora',newWs);
+  XLSX.utils.book_append_sheet(newWb,newWs,'Bitácora');
   _wb=newWb;
 
   return{DATA,DATA_ME,DATA_YR,DATA_AB_ME,DATA_CO:dataCo,segSe,T,refMes,refDia,refAnio,refStr,periodo,stats:{total,pendientes,etiquetadas,traslativas,concluido}};
