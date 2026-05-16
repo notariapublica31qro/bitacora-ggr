@@ -237,7 +237,7 @@ function diasHabiles(s,e){
 // ── Procesamiento principal ────────────────────────────────────────────────
 function processWorkbook(wb){
   const ws=wb.Sheets[wb.SheetNames[0]];
-  const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'yyyy-mm-dd'});
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true});
   const header=rows[0];
   const H={};header.forEach((h,i)=>{if(h)H[h]=i;});
 
