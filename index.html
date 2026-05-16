@@ -390,7 +390,7 @@ async function handleFile(file){
   try{
     const buf=await file.arrayBuffer();
     setProgress(30,'Procesando escrituras…');await new Promise(r=>setTimeout(r,50));
-    const wb=XLSX.read(buf,{type:'array',cellDates:true});
+    const wb=XLSX.read(buf,{type:'array',cellDates:true,cellText:false});
     setProgress(60,'Aplicando reglas de etiquetado…');await new Promise(r=>setTimeout(r,50));
     const res=processWorkbook(wb);
     setProgress(85,'Guardando datos del reporte…');await new Promise(r=>setTimeout(r,50));
