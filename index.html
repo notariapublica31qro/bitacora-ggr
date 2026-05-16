@@ -497,8 +497,7 @@ async function handleFile(file){
     document.getElementById('actions').style.display='flex';
   }catch(err){
     setProgress(0,'');
-    const stack=(err.stack||'').split('\n').slice(0,6).join('\n');
-    showError('Error: '+err.message+'\n\n'+stack);
+    showError('Error al procesar: '+err.message);
     console.error(err);
   }
 }
