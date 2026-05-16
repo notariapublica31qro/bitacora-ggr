@@ -96,3 +96,338 @@ function isEmpty(v){if(v===null||v===undefined)return true;if(typeof v==='string
 function hasDate(v){return isDt(v);}
 function noDate(v){return!isDt(v);}
 function pendingNoDash(v){return isEmpty(v)||isStar(v);}
+
+// ── Helpers de negocio ────────────────────────────────────────────────────
+function cancelRpp(r){return isDash(r['RPP. Regreso de RPP Testimonio'])&&isDash(r['RPP. Captura Dato Inscripción RPP']);}
+function cancelRpc(r){return isDash(r['RPC. Entrega a Unidad RPC']);}
+function rppApl(r){const s=r['RPP. Solicitud'];if(isDash(s)||!isDt(s))return false;return!cancelRpp(r);}
+function rpcApl(r){const s=r['RPC. Solicitud'];if(isDash(s)||!isDt(s))return false;return!cancelRpc(r);}
+function aplicBienes(r){const op=r['Operación'];if(typeof op!=='string')return false;const u=op.toUpperCase();return u.includes('APLICACIÓN DE BIENES')||u.includes('APLICACION DE BIENES');}
+
+// ── Etiquetado no traslativas ──────────────────────────────────────────────
+function labelNoTras(r){
+  const cierreExp=r['CIERRE. Expedición de Testimonio'],entDig=r['ENT. Testimonio Digitalizado'],entFin=r['ENT. Entrega Test a Financiero'],entRec=r['ENT. Test. a Recepción'];
+  const rppSol=r['RPP. Solicitud'],rpcSol=r['RPC. Solicitud'],rppRegreso=r['RPP. Regreso de RPP Testimonio'],rppCaptura=r['RPP. Captura Dato Inscripción RPP'],rppEntrada=r['RPP. Entrada a RPP Testimonio'],rppDigEntrada=r['RPP. Digitalización Entrada RPP'],sigerDig=r['SIGER. Dig. Const. Inscripción RPC'];
+  const rppNo=isDash(rppSol)||(isDt(rppSol)&&cancelRpp(r)),rpcNo=isDash(rpcSol)||(isDt(rpcSol)&&cancelRpc(r)),cierreOrEnt=[cierreExp,entDig,entFin,entRec].some(x=>hasDate(x));
+  if(rppNo&&rpcNo&&cierreOrEnt)return['CONCLUIDO',null];
+  if(rppNo&&rpcNo&&!cierreOrEnt)return['FALTA CIERRE',null];
+  if(rppApl(r)&&(hasDate(rppRegreso)||hasDate(rppCaptura)))return['CONCLUIDO',null];
+  if(rppApl(r)&&noDate(rppRegreso)&&noDate(rppCaptura)){if(hasDate(rppEntrada)||hasDate(rppDigEntrada))return['EN RPP',null];}
+  if(rppApl(r)&&noDate(rppRegreso)&&noDate(rppCaptura)){if(noDate(rppEntrada)&&noDate(rppDigEntrada))return['FALTA RPP',null];}
+  if(rpcApl(r)&&hasDate(sigerDig))return['CONCLUIDO',null];
+  if(rpcApl(r)&&isDash(sigerDig)&&cierreOrEnt)return['CONCLUIDO',null];
+  if(rpcApl(r)&&pendingNoDash(sigerDig))return['FALTA SIGER',null];
+  if(hasDate(rppRegreso)||hasDate(rppCaptura)||hasDate(sigerDig))return['CONCLUIDO',null];
+  if((isDash(rppRegreso)||isDash(sigerDig))&&cierreOrEnt)return['CONCLUIDO',null];
+  if(cierreOrEnt)return['CONCLUIDO',null];
+  return['FALTA CIERRE',null];
+}
+
+// ── Etiquetado traslativas ─────────────────────────────────────────────────
+function labelTras(r){
+  const rppSolTr=r['RPP. Solicitud'];
+  if(isDash(rppSolTr)){
+    const catNotif=r['CAT. Dig Notificacion Catastral'],cierreOrEntTr=['CIERRE. Expedición de Testimonio','ENT. Testimonio Digitalizado','ENT. Entrega Test a Financiero','ENT. Test. a Recepción'].some(c=>hasDate(r[c])),notifOk=hasDate(catNotif)||isDash(catNotif);
+    if(notifOk&&cierreOrEntTr)return['CONCLUIDO',null];
+    if(!notifOk&&cierreOrEntTr)return['FALTA FINALIZAR','NOTIF CAT'];
+    const tdDigPagoTr=r['TD. Digitalización Pago TD'],tdPagoTr=r['TD. Pago'],tdPagadoTr=hasDate(tdDigPagoTr)||hasDate(tdPagoTr);
+    if(!tdPagadoTr)return['FALTA TD',null];
+    if(!notifOk)return['FALTA FINALIZAR','NOTIF CAT'];
+    return['CONCLUIDO',null];
+  }
+  const catDigNotif=r['CAT. Dig Notificacion Catastral'],rppRegreso=r['RPP. Regreso de RPP Testimonio'],rppCaptura=r['RPP. Captura Dato Inscripción RPP'],rppEntrada=r['RPP. Entrada a RPP Testimonio'],rppDigEntrada=r['RPP. Digitalización Entrada RPP'],tdDigPago=r['TD. Digitalización Pago TD'],tdPago=r['TD. Pago'];
+  const rppTerm=hasDate(rppRegreso)||hasDate(rppCaptura),rppEntry=hasDate(rppEntrada)||hasDate(rppDigEntrada),tdPagado=hasDate(tdDigPago)||hasDate(tdPago);
+  if(isDash(catDigNotif)&&rppTerm)return['CONCLUIDO',null];
+  if(hasDate(catDigNotif)&&rppTerm)return['CONCLUIDO',null];
+  if(noDate(catDigNotif)&&rppTerm)return['FALTA FINALIZAR','NOTIF CAT'];
+  if(hasDate(catDigNotif)&&rppEntry&&noDate(rppRegreso)&&noDate(rppCaptura))return['EN RPP',null];
+  if(hasDate(catDigNotif)&&!rppEntry)return['FALTA RPP',null];
+  if(noDate(catDigNotif)&&rppEntry)return['EN RPP','NOTIF CAT'];
+  if(tdPagado&&noDate(catDigNotif)&&!rppEntry)return['FALTA RPP','NOTIF CAT'];
+  if(!tdPagado&&noDate(catDigNotif)&&!rppEntry){if(aplicBienes(r)&&hasDate(catDigNotif)){/*pass*/}else return['FALTA TD',null];}
+  return[null,null];
+}
+
+// ── Sub-trámites ───────────────────────────────────────────────────────────
+const CONCILIAR_COLS=['ENT. Test. a Recepción','ENT. Entrega Test a Financiero'];
+function stepPending(v){return isEmpty(v)&&!isDash(v);}
+function notifCatAplica(r){const l=r['Lleva TD'];if(typeof l!=='string'||l.trim().toUpperCase()!=='SI')return false;const c=r['CAT. Dig Notificacion Catastral'];return!hasDate(c)&&!isDash(c);}
+function digitalizarAplica(r){
+  const ed=r['ENT. Testimonio Digitalizado'],ce=r['CIERRE. Expedición de Testimonio'];
+  if(!stepPending(ed)||!hasDate(ce))return false;
+  const l=r['Lleva TD'],isTr=typeof l==='string'&&l.trim().toUpperCase()==='SI';
+  if(isTr)return hasDate(r['RPP. Regreso de RPP Testimonio']);
+  return(isDash(r['RPP. Solicitud'])||isEmpty(r['RPP. Solicitud']))&&(isDash(r['RPC. Solicitud'])||isEmpty(r['RPC. Solicitud']));
+}
+function conciliarAplica(r){return CONCILIAR_COLS.some(c=>stepPending(r[c]));}
+function enviarAplica(r){return[[r['Solicitud de Entrega de Testimonio al Banco'],r['BANCOS. Dig. Acuse de Recibo Banco']],[r['INFONAVIT. Solicitud de Entrega de Testimonio al Infonavit'],r['INFONAVIT. Dig. Acuse de Recibo INFONAVIT']],[r['Solicitud Entrega de Testimonio al Fovissste'],r['FOVISSSTE. Dig. Acuse de Recibo FOVISSSTE']]].some(([s,a])=>hasDate(s)&&stepPending(a));}
+function inferFF(r){const p=[];if(notifCatAplica(r))p.push('NOTIF CAT');const d=digitalizarAplica(r);if(d)p.push('DIGITALIZAR');if(conciliarAplica(r)&&!d)p.push('CONCILIAR');if(enviarAplica(r))p.push('ENVIAR');return p.length?p.join('-'):null;}
+function inferCierre(r){const m=r['MDC. Entrega Exp Unidad Gestión'],f=r['ESC. Entrega Firmas Completas'];if(!hasDate(m))return'PASAR';if(hasDate(f))return'ARMADO';return'FOLIO';}
+function inferTD(r){const m=r['MDC. Entrega Exp Unidad Gestión'],e=r['TD. Elab. Formato y/o Carga portal'];if(!hasDate(m))return'PASAR';if(!hasDate(e))return'CAPTURA';return'RECURSOS';}
+function inferRPP(r){
+  const fi=r['ESC. Entrega Firmas Completas'],ci=r['CIERRE. Expedición de Testimonio'],pagoHecho=['RPP. Pago RPP','RPP. Digitalización Pago RPP','SIGER. Pago RPC','SIGER. Digitalización de Pago RPC'].some(c=>hasDate(r[c]));
+  const lt=String(r['Lleva TD']||'').trim(),cs=r['CAT. Solicitud'],cd=r['CAT. Dig Notificacion Catastral'],cnp=lt==='SI'&&hasDate(cs)&&noDate(cd)&&!isDash(cd);
+  if(!hasDate(fi))return'FOLIO';if(!hasDate(ci))return'CIERRE';if(cnp)return'NOTIF CAT';if(!pagoHecho)return'PAGO';return'ENTRADA';
+}
+
+// ── labelRow ───────────────────────────────────────────────────────────────
+const VALID_ES=new Set(['CONCLUIDO','FALTA FINALIZAR','FALTA RPP','FALTA SIGER','EN RPP','FALTA TD','FALTA CIERRE']);
+const RE_EVAL=new Set(['CONCLUIDO','FALTA FINALIZAR','FALTA RPP','FALTA SIGER','FALTA TD','FALTA CIERRE','EN RPP']);
+function labelRow(r){
+  const e=r['Estatus'],eStr=typeof e==='string'?e.trim():'';
+  if(!isEmpty(e)&&!isStar(e)){
+    if(eStr==='CONCLUIDO'||eStr==='FALTA FINALIZAR'){const s=inferFF(r);if(s)return['FALTA FINALIZAR',s];if(eStr==='FALTA FINALIZAR'&&!s)return['CONCLUIDO',''];}
+    if(eStr==='FALTA RPP'||eStr==='FALTA SIGER')return[eStr,inferRPP(r)];
+    if(eStr==='FALTA TD')return[eStr,inferTD(r)];
+    if(eStr==='FALTA CIERRE')return[eStr,inferCierre(r)];
+    if(eStr!=='EN RPP')return[eStr,r['Tramite']||''];
+  }
+  const l=r['Lleva TD'],isTr=typeof l==='string'&&l.trim().toUpperCase()==='SI';
+  let[est,tr]=isTr?labelTras(r):labelNoTras(r);
+  if(est===null)return['',''];
+  if(est==='CONCLUIDO'){const s=inferFF(r);if(s)return['FALTA FINALIZAR',s];}
+  if(est==='CONCLUIDO'&&tr)est='FALTA FINALIZAR';
+  if(est==='FALTA RPP'||est==='FALTA SIGER')return[est,inferRPP(r)];
+  if(est==='FALTA TD')return[est,inferTD(r)];
+  if(est==='FALTA CIERRE')return[est,inferCierre(r)];
+  return[est,tr||''];
+}
+
+// ── Constantes de negocio ──────────────────────────────────────────────────
+const INFONAVIT_KW='INSTITUTO DEL FONDO NACIONAL DE LA VIVIENDA PARA LOS TRABAJADORES';
+const FOVISSSTE_KW='FONDO DE LA VIVIENDA DEL INSTITUTO DE SEGURIDAD Y SERVICIOS SOCIALES DE LOS TRABAJADORES DEL ESTADO';
+const NO_BANCO=['TIERRA Y ARMONIA'];
+const LOCAL_MUNI=new Set(['QUERÉTARO','QUERETARO','CORREGIDORA','EL MARQUÉS','EL MARQUES']);
+const CONSTR_KW2=['CONSTRUCTORA','INMOBILIARIA','GRUPO','RESIDENCIAL','DESARROLLOS','PROYECTOS','URBANIZADORA','PROMOTORA','ARQUITECTOS'];
+const BANCOS_KEYS=[['BBVA','BBVA'],['SCOTIABANK','SCOTIABANK'],['HSBC','HSBC'],['SANTANDER','SANTANDER'],['BANREGIO','BANREGIO'],['BANBAJÍO','BANBAJÍO'],['BANBAJIO','BANBAJÍO'],['AFIRME','AFIRME'],['MIFEL','MIFEL'],['INBURSA','INBURSA'],['BANORTE','BANORTE'],['CITIBANAMEX','CITIBANAMEX'],['BANAMEX','BANAMEX'],['AZTECA','AZTECA'],['INVEX','BANCO INVEX'],['AXIONEX','AXIONEX FINANCIERA'],['BANCO NACIONAL DEL EJERCITO','BANJERCITO'],['INSTITUTO DE SEGURIDAD SOCIAL PARA LAS FUERZAS ARMADAS','ISSFAM']];
+const REN=[['CAJA POPULAR FLORE','CP FLORENCIO ROSAS'],['CAJA POPULAR MEXIC','CP MEXICANA'],['BANCO INVEX SA IBM','BANCO INVEX'],['INSTITUTO MEXICANO','IMSS']];
+const GGR_HIST={2015:[47,75,94,69,67,109,76,72,64,77,80,120],2016:[26,32,23,36,26,23,24,32,37,28,20,54],2017:[21,31,38,29,34,31,31,30,31,31,36,36],2018:[25,37,6,4,5,3,3,5,3,3,8,3],2019:[2,6,7,2,0,3,8,15,24,19,18,16],2020:[15,17,20,9,14,23,31,27,69,86,35,59],2021:[18,19,23,24,23,20,7,0,0,0,0,0],2023:[0,0,7,8,25,20,23,35,34,62,19,33],2024:[30,30,27,23,17,17,26,25,36,21,16,7],2025:[19,4,26,13,25,18,12,14,32,13,25,22]};
+
+function esForanea(m){if(typeof m!=='string'||!m.trim()||m.trim()==='-')return false;return!m.split('-').map(p=>p.trim().toUpperCase()).filter(p=>p).every(p=>LOCAL_MUNI.has(p));}
+function esConstr(e){if(typeof e!=='string')return false;const u=e.toUpperCase();return CONSTR_KW2.some(k=>u.includes(k));}
+function llevaBancos(a){if(typeof a!=='string'||!a.trim()||a.trim()==='-')return false;if(NO_BANCO.some(n=>a.includes(n)))return false;const p=new Set(a.split(' - ').map(x=>x.trim()));return![...p].every(x=>x===INFONAVIT_KW||x===FOVISSSTE_KW);}
+function abrevAcreedor(ac){
+  if(!ac||typeof ac!=='string')return'';const a=ac.trim();if(!a||a==='-')return'';
+  let abr=[];
+  for(const p of a.split(' - ').map(p=>p.trim())){
+    const u=p.toUpperCase();
+    if(NO_BANCO.some(n=>p.includes(n)))continue;
+    if(p.includes(INFONAVIT_KW)){abr.push('INFONAVIT');continue;}
+    if(p.includes(FOVISSSTE_KW)){abr.push('FOVISSSTE');continue;}
+    let matched=null;for(const[k,s]of BANCOS_KEYS){if(u.includes(k)){matched=s;break;}}
+    abr.push(matched||p.slice(0,18).trim()||p);
+  }
+  const seen=new Set(),out=[];for(const x of abr){if(!seen.has(x)){seen.add(x);out.push(x);}}
+  if(out.includes('INFONAVIT')){const r=out.filter(x=>x!=='INFONAVIT');out.length=0;out.push('INFONAVIT',...r);}
+  else if(out.includes('FOVISSSTE')){const r=out.filter(x=>x!=='FOVISSSTE');out.length=0;out.push('FOVISSSTE',...r);}
+  let o2=out.map(x=>{for(const[ol,nw]of REN)x=x.replace(ol,nw);return x;});
+  return o2.join('-');
+}
+function fmtXp(x){if(typeof x!=='string'||!x.includes('.'))return x;const p=x.split('.');if(p.length!==2)return x;if(p[1].length===1)return`${p[0]}.${p[1]}0`;return x;}
+function diasHabiles(s,e){
+  if(!isDt(s)||!isDt(e))return 0;
+  let d=toDt(s),en=toDt(e);
+  d=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  en=new Date(en.getFullYear(),en.getMonth(),en.getDate());
+  let days=0,cur=new Date(d.getTime()+86400000);
+  while(cur<=en){if(cur.getDay()!==0&&cur.getDay()!==6)days++;cur=new Date(cur.getTime()+86400000);}
+  return days;
+}
+
+// ── Procesamiento principal ────────────────────────────────────────────────
+function processWorkbook(wb){
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'yyyy-mm-dd'});
+  const header=rows[0];
+  const H={};header.forEach((h,i)=>{if(h)H[h]=i;});
+
+  // REF = ayer en CDT (UTC-5)
+  const now=new Date();
+  const cdtMs=now.getTime()+now.getTimezoneOffset()*60000+(-5)*3600000;
+  const cdt=new Date(cdtMs);
+  const REF=new Date(cdt.getFullYear(),cdt.getMonth(),cdt.getDate()-1);
+
+  let total=0,etiquetadas=0;
+  const esCount={},abStats={},trCount={},meGlobal={},yearMonthAb={};
+  const segSe={foraneas:0,constructoras:0,con_bancos:0,con_infonavit:0,con_fovissste:0};
+  const dataPe=[],dataCo=[],alTd=[],alTdPv=[],alRpp45=[],alFirmas=[],alRpp90solo=[],alBancos90=[],alInfo90=[],alFovi90=[];
+
+  const colEs=H['Estatus'],colTr=H['Tramite'],colAb=H['Abogado'];
+  const modRows=[header.slice()];
+
+  for(let ri=1;ri<rows.length;ri++){
+    const row=rows[ri];
+    if(row.every(v=>v===null||v===undefined||v===''))continue;
+    const esRaw=row[colEs],esTest=typeof esRaw==='string'?esRaw.trim():'';
+    if(esTest&&!VALID_ES.has(esTest)){modRows.push(row.slice());continue;}
+    total++;
+    const r={};header.forEach((h,i)=>{if(h)r[h]=row[i]!==undefined?row[i]:null;});
+
+    // Normalizar abogado
+    if(typeof r['Abogado']==='string'){
+      const au=r['Abogado'].trim().toUpperCase();
+      if(au==='COO'){r['Abogado']='LBR';row[colAb]='LBR';}
+      else if(au==='J31'){r['Abogado']='';}
+    }
+
+    // Etiquetar
+    const esActual=r['Estatus'],esActualStr=typeof esActual==='string'?esActual.trim():'';
+    if(isEmpty(esActual)||isStar(esActual)||RE_EVAL.has(esActualStr)){
+      const[est,tr]=labelRow(r);
+      if(est){r['Estatus']=est;r['Tramite']=tr||'';row[colEs]=est;row[colTr]=tr||'';etiquetadas++;}
+    }
+    modRows.push(row.slice());
+
+    const esStr=typeof r['Estatus']==='string'?r['Estatus'].trim():'';
+    if(esStr)esCount[esStr]=(esCount[esStr]||0)+1;
+
+    let abN=typeof r['Abogado']==='string'?r['Abogado'].trim().toUpperCase():'';
+    if(abN==='COO')abN='LBR';if(abN==='J31')abN='';
+
+    const op=r['Operación']||'',muni=r['Municipio']||'',enaj=r['Enajenante/Vendedor']||r['Enajenante / Vendedor']||null;
+    const acRaw=r['Acreedor']||null,fe=r['Fech. Esc.'],tdLleva=r['Lleva TD'];
+    const isTras=typeof tdLleva==='string'&&tdLleva.trim().toUpperCase()==='SI';
+    const trStr=typeof r['Tramite']==='string'?r['Tramite'].trim():'';
+    const eS=r['Escritura']!==null&&r['Escritura']!==undefined?String(r['Escritura']):'';
+    const xp=fmtXp(r['Expediente']!==null&&r['Expediente']!==undefined?String(r['Expediente']).trim():'');
+
+    if(trStr)trCount[trStr]=(trCount[trStr]||0)+1;
+
+    if(abN){
+      if(!abStats[abN])abStats[abN]={nombre:abN,total:0,concluido:0,pendiente:0,falta_rpp:0,en_rpp:0,falta_td:0,falta_cierre:0,falta_finalizar:0,falta_siger:0};
+      const s=abStats[abN];s.total++;
+      if(esStr==='CONCLUIDO'||esStr==='FALTA FINALIZAR'){s.concluido++;if(esStr==='FALTA FINALIZAR')s.falta_finalizar++;}
+      else if(esStr){s.pendiente++;const mp={'FALTA RPP':'falta_rpp','EN RPP':'en_rpp','FALTA TD':'falta_td','FALTA CIERRE':'falta_cierre','FALTA SIGER':'falta_siger'};if(mp[esStr])s[mp[esStr]]++;}
+    }
+
+    let feD=null,feStr='';
+    if(isDt(fe)){
+      feD=toDt(fe);
+      feStr=`${feD.getFullYear()}-${String(feD.getMonth()+1).padStart(2,'0')}-${String(feD.getDate()).padStart(2,'0')}`;
+      const ym=feStr.slice(0,7);meGlobal[ym]=(meGlobal[ym]||0)+1;
+      const yr=String(feD.getFullYear()),mo=feD.getMonth();
+      if(!yearMonthAb[abN])yearMonthAb[abN]={};
+      if(!yearMonthAb[abN][yr])yearMonthAb[abN][yr]=new Array(12).fill(0);
+      yearMonthAb[abN][yr][mo]++;
+    }
+
+    const isFor=esForanea(muni),isCo2=esConstr(enaj),isBaSeg=llevaBancos(acRaw);
+    const isInfoSeg=typeof acRaw==='string'&&acRaw.includes(INFONAVIT_KW);
+    const isFoviSeg=typeof acRaw==='string'&&acRaw.includes(FOVISSSTE_KW);
+    if(isFor)segSe.foraneas++;if(isCo2)segSe.constructoras++;if(isBaSeg)segSe.con_bancos++;if(isInfoSeg)segSe.con_infonavit++;if(isFoviSeg)segSe.con_fovissste++;
+
+    function acusePend(v){if(v===null||v===undefined)return true;return['','*','-','nan','NaN','None'].includes(String(v).trim());}
+    const baAcuse=r['BANCOS. Dig. Acuse de Recibo Banco'],infoAcuse=r['INFONAVIT. Dig. Acuse de Recibo INFONAVIT'],foviAcuse=r['FOVISSSTE. Dig. Acuse de Recibo FOVISSSTE'];
+    const isBa=isBaSeg&&acusePend(baAcuse),isInfo=isInfoSeg&&acusePend(infoAcuse),isFovi=isFoviSeg&&acusePend(foviAcuse)&&(!isBaSeg||acusePend(baAcuse));
+
+    const catSol2=r['CAT. Solicitud'],catDig2=r['CAT. Dig Notificacion Catastral'];
+    function activo(v){return v!==null&&v!==undefined&&!['','-','*','nan','NaN','None'].includes(String(v).trim());}
+    const catPend=isTras&&activo(catSol2)&&!activo(catDig2)&&String(catDig2||'').trim()!=='-'&&esStr!=='FALTA TD';
+    const acShort=abrevAcreedor(acRaw);
+
+    const base={e:eS,ab:abN,op:typeof op==='string'?op:'',mu:typeof muni==='string'?muni.slice(0,25):'',fe:feStr,es:esStr,tr:trStr,td:isTras,ba:isBa,co:isCo2,fo:isFor,infonavit:isInfo,fovissste:isFovi,rpp:false,ac:acShort,xp:xp,cat_pend:catPend};
+    if(esStr==='CONCLUIDO'||esStr==='FALTA FINALIZAR')dataCo.push(base);
+    else if(esStr)dataPe.push(base);
+
+    if(!esStr||esStr==='CONCLUIDO'||!feD)continue;
+    const dNat=Math.floor((REF-feD)/86400000);
+    if(dNat<=0)continue;
+    const ial={e:eS,ab:abN,op:base.op,mu:base.mu,fe:feStr,d:dNat,v:true,xp:xp,ac:acShort};
+    const tdPago=r['TD. Digitalización Pago TD'],catDigAl=r['CAT. Dig Notificacion Catastral'],opU=typeof op==='string'?op.toUpperCase():'';
+    const excep=isTras&&opU.includes('APLICACION DE BIENES')&&isDt(catDigAl)&&!isDt(tdPago);
+    if(isTras&&!isDt(tdPago)&&!excep){const dh=diasHabiles(feD,REF);if(dh>15)alTd.push({...ial,li:15,v:true});else if(dh>=9&&dh<15)alTdPv.push({...ial,li:15,v:false,d:dNat});}
+    const rppEnt=r['RPP. Entrada a RPP Testimonio'],rppDigEnt=r['RPP. Digitalización Entrada RPP'],rppEntered=isDt(rppEnt)||isDt(rppDigEnt);
+    if(esStr!=='EN RPP'&&!rppEntered&&dNat>45)alRpp45.push({...ial,li:45});
+    if(!isDt(r['ESC. Entrega Firmas Completas'])&&dNat>60)alFirmas.push({...ial,li:60});
+    const rppTerm=isDt(r['RPP. Regreso de RPP Testimonio'])||isDt(r['RPP. Captura Dato Inscripción RPP']);
+    if(!rppTerm&&!isBa&&!isInfo&&!isFovi){if(isTras&&dNat>90)alRpp90solo.push({...ial,li:90});else if(!isTras&&dNat>30)alRpp90solo.push({...ial,li:30});}
+    if(!rppTerm){if(isBa&&dNat>150)alBancos90.push({...ial,li:150});if(isInfo&&dNat>150)alInfo90.push({...ial,li:150});if(isFovi&&dNat>150)alFovi90.push({...ial,li:150});}
+  }
+
+  const traslativas=[...dataPe,...dataCo].filter(r=>r.td).length;
+  const concluido=(esCount['CONCLUIDO']||0)+(esCount['FALTA FINALIZAR']||0);
+  const pendientes=total-concluido;
+  const DATA={t:{total,traslativas,no_traslativas:total-traslativas,concluido,pendientes,pct_concluido:total?Math.round(concluido/total*1000)/10:0},es:{...esCount},ab:abStats,se:segSe,me:{...meGlobal},tr:{...trCount},al:{td:alTd,rpp45:alRpp45,firmas:alFirmas,rpp90:[],pe:[],bancos:[],infonavit:[],fovissste:[],td_pv:alTdPv,rpp90solo:alRpp90solo,bancos90:alBancos90,infonavit90:alInfo90,fovissste90:alFovi90},pe:dataPe};
+
+  // Tendencia GGR
+  const DATA_ME={};
+  for(const[y,a]of Object.entries(GGR_HIST))DATA_ME[String(y)]=[...a];
+  for(const[y,a]of Object.entries(yearMonthAb['GGR']||{})){if(!DATA_ME[y])DATA_ME[y]=[...a];}
+  const DATA_YR={};for(const[y,a]of Object.entries(DATA_ME))DATA_YR[y]=a.reduce((s,n)=>s+n,0);
+  const DATA_AB_ME={};
+  for(const[abK,yd]of Object.entries(yearMonthAb)){const an=abK==='COO'?'LBR':abK;if(!DATA_AB_ME[an])DATA_AB_ME[an]={};for(const[y,a]of Object.entries(yd))DATA_AB_ME[an][y]=[...a];}
+
+  const MESES=['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  const MESES_L=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const refMes=MESES[REF.getMonth()],refDia=String(REF.getDate()).padStart(2,'0'),refAnio=String(REF.getFullYear());
+  const refStr=`${refDia}-${String(REF.getMonth()+1).padStart(2,'0')}-${refAnio}`;
+
+  const meKeys=Object.keys(meGlobal).sort();let periodo='';
+  if(meKeys.length){const[my,mm]=meKeys[0].split('-'),[xy,xm]=meKeys[meKeys.length-1].split('-');periodo=meKeys[0]===meKeys[meKeys.length-1]?`${MESES_L[+mm-1]} ${my}`:`${MESES_L[+mm-1]} ${my} - ${MESES_L[+xm-1]} ${xy}`;}
+
+  const T=total||1;
+
+  // Reconstruir workbook modificado
+  const newWb=XLSX.utils.book_new();
+  const newWs=XLSX.utils.aoa_to_sheet(modRows);
+  XLSX.utils.book_append_sheet(newWb,'Bitácora',newWs);
+  _wb=newWb;
+
+  return{DATA,DATA_ME,DATA_YR,DATA_AB_ME,DATA_CO:dataCo,segSe,T,refMes,refDia,refAnio,refStr,periodo,stats:{total,pendientes,etiquetadas,traslativas,concluido}};
+}
+
+// ── UI helpers ─────────────────────────────────────────────────────────────
+function setProgress(pct,label){document.getElementById('progressBar').style.width=pct+'%';document.getElementById('progressLabel').textContent=label;}
+function showError(msg){const el=document.getElementById('errorMsg');el.textContent=msg;el.style.display='block';}
+
+async function handleFile(file){
+  if(!file||!file.name.endsWith('.xlsx')){showError('Por favor sube un archivo .xlsx');return;}
+  document.getElementById('errorMsg').style.display='none';
+  document.getElementById('progressWrap').style.display='block';
+  document.getElementById('actions').style.display='none';
+  document.getElementById('statsBox').style.display='none';
+  setProgress(10,'Leyendo archivo…');
+  try{
+    const buf=await file.arrayBuffer();
+    setProgress(30,'Procesando escrituras…');await new Promise(r=>setTimeout(r,50));
+    const wb=XLSX.read(buf,{type:'array',cellDates:true,dateNF:'yyyy-mm-dd'});
+    setProgress(60,'Aplicando reglas de etiquetado…');await new Promise(r=>setTimeout(r,50));
+    const res=processWorkbook(wb);
+    setProgress(85,'Guardando datos del reporte…');await new Promise(r=>setTimeout(r,50));
+
+    sessionStorage.setItem('ggr_data',JSON.stringify(res.DATA));
+    sessionStorage.setItem('ggr_data_me',JSON.stringify(res.DATA_ME));
+    sessionStorage.setItem('ggr_data_yr',JSON.stringify(res.DATA_YR));
+    sessionStorage.setItem('ggr_data_ab_me',JSON.stringify(res.DATA_AB_ME));
+    sessionStorage.setItem('ggr_data_co',JSON.stringify(res.DATA_CO));
+    sessionStorage.setItem('ggr_ref_mes',res.refMes);
+    sessionStorage.setItem('ggr_ref_dia',res.refDia);
+    sessionStorage.setItem('ggr_ref_anio',res.refAnio);
+    sessionStorage.setItem('ggr_ref_str',res.refStr);
+    sessionStorage.setItem('ggr_periodo',res.periodo);
+    sessionStorage.setItem('ggr_seg',JSON.stringify({se:res.segSe,T:res.T}));
+
+    setProgress(100,'¡Listo!');
+
+    const s=res.stats;
+    document.getElementById('s-total').textContent=s.total.toLocaleString();
+    document.getElementById('s-pend').textContent=s.pendientes;
+    document.getElementById('s-etiq').textContent=s.etiquetadas.toLocaleString();
+    document.getElementById('statsBox').style.display='block';
+    document.getElementById('actions').style.display='flex';
+  }catch(err){
+    setProgress(0,'');showError('Error al procesar: '+err.message);console.error(err);
+  }
+}
+
+function verReporte(){window.location.href='reporte.html';}
+function descargarXlsx(){if(!_wb)return;XLSX.writeFile(_wb,'Bitacora GGR etiquetada.xlsx');}
+
+document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
+</script>
+</body>
+</html>
