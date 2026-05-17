@@ -428,6 +428,12 @@ th.col-tr, td.col-tr{width:240px;text-align:center;font-size:.84rem;font-weight:
     <span class="h-ribbon">Reporte Ejecutivo</span>
     <span class="h-title">Bitácora GGR</span>
     <span class="h-periodo"><span class="lbl">Periodo:</span> Jun 2019 - May 2026</span>
+    <span style="display:flex;align-items:center;gap:8px;margin-top:5px;">
+      <button onclick="exportGGRExcel()" title="Descargar Excel" style="display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:7px;border:none;background:#16a34a;color:#fff;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.02em;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Excel
+      </button>
+    </span>
     <span id="periodo-label" style="display:none">Mayo 2026</span>
     <span style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span id="gh-sync-status" style="font-size:.72rem;color:#94a3b8;letter-spacing:.02em;">&#8635; Conectando...</span><button onclick="showTokenModal()" title="Configurar token GitHub" style="background:none;border:none;cursor:pointer;color:#475569;font-size:.82rem;padding:0;line-height:1;">&#9881;</button></span>
   </div>
@@ -638,21 +644,21 @@ th.col-tr, td.col-tr{width:240px;text-align:center;font-size:.84rem;font-weight:
 </div><!-- /main -->
 
 <script>
-const DATA = JSON.parse(sessionStorage.getItem('ggr_data') || 'null') || {t:{total:0,traslativas:0,no_traslativas:0,concluido:0,pendientes:0,pct_concluido:0},es:{},ab:{},se:{foraneas:0,constructoras:0,con_bancos:0,con_infonavit:0,con_fovissste:0},me:{},tr:{},al:{td:[],rpp45:[],firmas:[],rpp90:[],pe:[],bancos:[],infonavit:[],fovissste:[],td_pv:[],rpp90solo:[],bancos90:[],infonavit90:[],fovissste90:[]},pe:[]};
+const DATA = JSON.parse(localStorage.getItem('ggr_data') || 'null') || {t:{total:0,traslativas:0,no_traslativas:0,concluido:0,pendientes:0,pct_concluido:0},es:{},ab:{},se:{foraneas:0,constructoras:0,con_bancos:0,con_infonavit:0,con_fovissste:0},me:{},tr:{},al:{td:[],rpp45:[],firmas:[],rpp90:[],pe:[],bancos:[],infonavit:[],fovissste:[],td_pv:[],rpp90solo:[],bancos90:[],infonavit90:[],fovissste90:[]},pe:[]};
 // DIAGNÓSTICO TEMPORAL — remover después
 document.addEventListener('DOMContentLoaded',function(){
   const _t=DATA.t&&DATA.t.total||0;
-  const _keys=Object.keys(sessionStorage).filter(k=>k.startsWith('ggr_'));
+  const _keys=Object.keys(localStorage).filter(k=>k.startsWith('ggr_'));
   const _dbg=document.createElement('div');
   _dbg.id='_dbg_ss';
   _dbg.style='position:fixed;bottom:8px;right:8px;background:#0f172a;border:1px solid #6c8ef5;color:#e2e8f0;padding:8px 12px;border-radius:8px;font-size:.72rem;font-family:monospace;z-index:9999;';
   _dbg.textContent='SS keys: '+_keys.length+' | DATA.t.total: '+_t;
   document.body.appendChild(_dbg);
 });
-const DATA_ME = JSON.parse(sessionStorage.getItem('ggr_data_me') || '{}');
-const DATA_YR = JSON.parse(sessionStorage.getItem('ggr_data_yr') || '{}');
-const DATA_AB_ME = JSON.parse(sessionStorage.getItem('ggr_data_ab_me') || '{}');
-const DATA_CO = JSON.parse(sessionStorage.getItem('ggr_data_co') || '[]');
+const DATA_ME = JSON.parse(localStorage.getItem('ggr_data_me') || '{}');
+const DATA_YR = JSON.parse(localStorage.getItem('ggr_data_yr') || '{}');
+const DATA_AB_ME = JSON.parse(localStorage.getItem('ggr_data_ab_me') || '{}');
+const DATA_CO = JSON.parse(localStorage.getItem('ggr_data_co') || '[]');
 
 
 
@@ -2421,9 +2427,9 @@ function _buildPrintHtml(tableId, title) {
     + clone.outerHTML
     +"
 <script>
-// ── Inicialización desde sessionStorage (web app mode) ──────────────────
+// ── Inicialización desde localStorage (web app mode) ──────────────────
 (function(){
-  var _ss = window.sessionStorage;
+  var _ss = window.localStorage;
   if(!_ss.getItem('ggr_data')){
     // Sin datos: mostrar aviso y redirigir
     document.body.insertAdjacentHTML('beforeend',
@@ -2610,9 +2616,9 @@ function printPe(){
     +'<table>'+cg+thead+tbody+'</table>'
     +'
 <script>
-// ── Inicialización desde sessionStorage (web app mode) ──────────────────
+// ── Inicialización desde localStorage (web app mode) ──────────────────
 (function(){
-  var _ss = window.sessionStorage;
+  var _ss = window.localStorage;
   if(!_ss.getItem('ggr_data')){
     // Sin datos: mostrar aviso y redirigir
     document.body.insertAdjacentHTML('beforeend',
@@ -2940,9 +2946,9 @@ function printAl(){
     +'<table>'+cg+thead+tbody+'</table>'
     +'
 <script>
-// ── Inicialización desde sessionStorage (web app mode) ──────────────────
+// ── Inicialización desde localStorage (web app mode) ──────────────────
 (function(){
-  var _ss = window.sessionStorage;
+  var _ss = window.localStorage;
   if(!_ss.getItem('ggr_data')){
     // Sin datos: mostrar aviso y redirigir
     document.body.insertAdjacentHTML('beforeend',
@@ -3108,6 +3114,27 @@ function dlCSV(headers, rows, filename) {
   URL.revokeObjectURL(url);
 }
 
+
+// ── Exportar Excel GGR ────────────────────────────────────────────────────
+function exportGGRExcel(){
+  const all=[...( DATA.pe||[]),...(DATA_CO||[])];
+  all.sort((a,b)=>{
+    if(a.fe&&b.fe) return a.fe<b.fe?-1:a.fe>b.fe?1:0;
+    return 0;
+  });
+  const headers=['Escritura','Expediente','Abogado','Operación','Municipio','Fecha Esc.','Estatus','Trámite','Acreedor','Lleva TD'];
+  const rows=[headers,...all.map(r=>[
+    r.e||'',r.xp||'',r.ab||'',r.op||'',r.mu||'',r.fe||'',r.es||'',r.tr||'',r.ac||'',r.td?'SI':'NO'
+  ])];
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  // Column widths
+  ws['!cols']=[{wch:10},{wch:10},{wch:8},{wch:35},{wch:20},{wch:12},{wch:16},{wch:14},{wch:22},{wch:9}];
+  XLSX.utils.book_append_sheet(wb,ws,'GGR');
+  const per=(localStorage.getItem('ggr_periodo')||'').replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
+  XLSX.writeFile(wb,'Bitacora_GGR'+(per?'_'+per:'')+'.xlsx');
+}
+
 // INIT
 // Calendario ya hardcodeado en HTML (ABR / 30 / 2026)
 
@@ -3218,12 +3245,13 @@ window.addEventListener('DOMContentLoaded', updateMetaRing);
 window.addEventListener('DOMContentLoaded', function(){ setTimeout(loadFromGitHub, 500); });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
 <script>
-// ── Inicialización desde sessionStorage (web app mode) ──────────────────
+// ── Inicialización desde localStorage (web app mode) ──────────────────
 (function(){
-  var _ss = window.sessionStorage;
+  var _ss = window.localStorage;
   if(!_ss.getItem('ggr_data')){
     // Sin datos: mostrar aviso y redirigir
     document.body.insertAdjacentHTML('beforeend',
