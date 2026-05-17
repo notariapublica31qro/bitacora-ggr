@@ -2410,7 +2410,7 @@ function _buildPrintHtml(tableId, title) {
     +"</head><body>"
     +"<h2>" + title + "</h2>"
     + clone.outerHTML
-    +"
+    +`
 <script>
 // ── Inicialización desde localStorage (web app mode) ──────────────────
 (function(){
@@ -2489,7 +2489,7 @@ function _buildPrintHtml(tableId, title) {
 })();
 <\/script>
 
-</body></html>";
+</body></html>`;
 }
 
 function exportPePDF(){
@@ -2599,7 +2599,7 @@ function printPe(){
     +'</head><body>'
     +'<h2>'+title+'</h2>'
     +'<table>'+cg+thead+tbody+'</table>'
-    +'
+    +`
 <script>
 // ── Inicialización desde localStorage (web app mode) ──────────────────
 (function(){
@@ -2678,7 +2678,7 @@ function printPe(){
 })();
 <\/script>
 
-</body></html>';
+</body></html>`;
   var win=window.open('','_blank','width=1100,height=750');
   win.document.write(html);
   win.document.close();
@@ -2929,7 +2929,7 @@ function printAl(){
     +'</head><body>'
     +'<h2>'+title+'</h2>'
     +'<table>'+cg+thead+tbody+'</table>'
-    +'
+    +`
 <script>
 // ── Inicialización desde localStorage (web app mode) ──────────────────
 (function(){
@@ -3008,7 +3008,7 @@ function printAl(){
 })();
 <\/script>
 
-</body></html>';
+</body></html>`;
   var win=window.open('','_blank','width=1100,height=750');
   win.document.write(html);
   win.document.close();
