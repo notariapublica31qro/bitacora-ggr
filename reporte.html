@@ -428,14 +428,9 @@ th.col-tr, td.col-tr{width:240px;text-align:center;font-size:.84rem;font-weight:
     <span class="h-ribbon">Reporte Ejecutivo</span>
     <span class="h-title">Bitácora GGR</span>
     <span class="h-periodo"><span class="lbl">Periodo:</span> Jun 2019 - May 2026</span>
-    <span style="display:flex;align-items:center;gap:8px;margin-top:5px;">
-      <button onclick="exportGGRExcel()" title="Descargar Excel" style="display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:7px;border:none;background:#16a34a;color:#fff;font-size:.72rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.02em;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        Excel
-      </button>
-    </span>
+
     <span id="periodo-label" style="display:none">Mayo 2026</span>
-    <span style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span id="gh-sync-status" style="font-size:.72rem;color:#94a3b8;letter-spacing:.02em;">&#8635; Conectando...</span><button onclick="showTokenModal()" title="Configurar token GitHub" style="background:none;border:none;cursor:pointer;color:#475569;font-size:.82rem;padding:0;line-height:1;">&#9881;</button></span>
+    <span style="display:flex;align-items:center;gap:6px;margin-top:4px;"><span id="gh-sync-status" style="font-size:.72rem;color:#94a3b8;letter-spacing:.02em;">&#8635; Conectando...</span><button onclick="showTokenModal()" title="Configurar token GitHub" style="background:none;border:none;cursor:pointer;color:#475569;font-size:.82rem;padding:0;line-height:1;">&#9881;</button><button onclick="exportGGRExcel()" title="Descargar Excel" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:7px;border:none;background:#16a34a;color:#fff;font-size:.7rem;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.02em;margin-left:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Excel</button></span>
   </div>
   <div class="h-ring" id="meta-ring">
     <svg width="92" height="92" viewBox="0 0 92 92">
@@ -645,16 +640,6 @@ th.col-tr, td.col-tr{width:240px;text-align:center;font-size:.84rem;font-weight:
 
 <script>
 const DATA = JSON.parse(localStorage.getItem('ggr_data') || 'null') || {t:{total:0,traslativas:0,no_traslativas:0,concluido:0,pendientes:0,pct_concluido:0},es:{},ab:{},se:{foraneas:0,constructoras:0,con_bancos:0,con_infonavit:0,con_fovissste:0},me:{},tr:{},al:{td:[],rpp45:[],firmas:[],rpp90:[],pe:[],bancos:[],infonavit:[],fovissste:[],td_pv:[],rpp90solo:[],bancos90:[],infonavit90:[],fovissste90:[]},pe:[]};
-// DIAGNÓSTICO TEMPORAL — remover después
-document.addEventListener('DOMContentLoaded',function(){
-  const _t=DATA.t&&DATA.t.total||0;
-  const _keys=Object.keys(localStorage).filter(k=>k.startsWith('ggr_'));
-  const _dbg=document.createElement('div');
-  _dbg.id='_dbg_ss';
-  _dbg.style='position:fixed;bottom:8px;right:8px;background:#0f172a;border:1px solid #6c8ef5;color:#e2e8f0;padding:8px 12px;border-radius:8px;font-size:.72rem;font-family:monospace;z-index:9999;';
-  _dbg.textContent='SS keys: '+_keys.length+' | DATA.t.total: '+_t;
-  document.body.appendChild(_dbg);
-});
 const DATA_ME = JSON.parse(localStorage.getItem('ggr_data_me') || '{}');
 const DATA_YR = JSON.parse(localStorage.getItem('ggr_data_yr') || '{}');
 const DATA_AB_ME = JSON.parse(localStorage.getItem('ggr_data_ab_me') || '{}');
