@@ -502,7 +502,6 @@ function processWorkbook(rows){
   const newWs=XLSX.utils.aoa_to_sheet(modRows);
   XLSX.utils.book_append_sheet(newWb,newWs,'Bitácora');
   _wb=newWb;
-sessionStorage.setItem('ggr_xlsx_b64',XLSX.write(newWb,{type:'base64',bookType:'xlsx'}));
 
   return{DATA,DATA_ME,DATA_YR,DATA_AB_ME,DATA_CO:dataCo,segSe,T,refMes,refDia,refAnio,refStr,periodo,stats:{total,pendientes,etiquetadas,traslativas,concluido}};
 }
@@ -538,9 +537,9 @@ async function handleFile(file){
     localStorage.setItem('ggr_periodo',res.periodo);
     localStorage.setItem('ggr_seg',JSON.stringify({se:res.segSe,T:res.T}));
 
-    setProgress(100,'¡Listo! Abriendo reporte…');
-    await new Promise(r=>setTimeout(r,700));
-    verReporte();
+    setProgress(100,'¡Listo!');
+    document.getElementById('progressWrap').style.display='none';
+    document.getElementById('actions').style.display='flex';
   }catch(err){
     setProgress(0,'');
     showError('Error al procesar: '+err.message);
