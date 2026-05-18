@@ -3102,22 +3102,11 @@ function dlCSV(headers, rows, filename) {
 
 // ── Exportar Excel GGR ────────────────────────────────────────────────────
 function exportGGRExcel(){
-  const all=[...( DATA.pe||[]),...(DATA_CO||[])];
-  all.sort((a,b)=>{
-    if(a.fe&&b.fe) return a.fe<b.fe?-1:a.fe>b.fe?1:0;
-    return 0;
-  });
-  const headers=['Escritura','Expediente','Abogado','Operación','Municipio','Fecha Esc.','Estatus','Trámite','Acreedor','Lleva TD'];
-  const rows=[headers,...all.map(r=>[
-    r.e||'',r.xp||'',r.ab||'',r.op||'',r.mu||'',r.fe||'',r.es||'',r.tr||'',r.ac||'',r.td?'SI':'NO'
-  ])];
-  const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  // Column widths
-  ws['!cols']=[{wch:10},{wch:10},{wch:8},{wch:35},{wch:20},{wch:12},{wch:16},{wch:14},{wch:22},{wch:9}];
-  XLSX.utils.book_append_sheet(wb,ws,'GGR');
+  const b64=localStorage.getItem('ggr_xlsx_b64');
+  if(!b64){alert('Sube el archivo xlsx desde la pantalla inicial para poder descargar el Excel etiquetado.');return;}
+  const wb=XLSX.read(b64,{type:'base64'});
   const per=(localStorage.getItem('ggr_periodo')||'').replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
-  XLSX.writeFile(wb,'Bitacora_GGR'+(per?'_'+per:'')+'.xlsx');
+  XLSX.writeFile(wb,'Bitacora_GGR_etiquetada'+(per?'_'+per:'')+'.xlsx');
 }
 
 // INIT
