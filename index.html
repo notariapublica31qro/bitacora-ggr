@@ -554,7 +554,7 @@ async function handleFile(file){
 
     setProgress(90,'Guardando archivo etiquetado…');
     const xlsxB64=XLSX.write(_wb,{type:'base64',bookType:'xlsx'});
-    await saveToIDB(xlsxB64);
+    try{await saveToIDB(xlsxB64);}catch(e){console.warn('IDB:',e);}
     setProgress(100,'¡Listo! Abriendo reporte…');
     await new Promise(r=>setTimeout(r,700));
     verReporte();
