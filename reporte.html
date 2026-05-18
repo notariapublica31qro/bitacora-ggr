@@ -3102,11 +3102,22 @@ function dlCSV(headers, rows, filename) {
 
 // ── Exportar Excel GGR ────────────────────────────────────────────────────
 function exportGGRExcel(){
-  const b64=sessionStorage.getItem('ggr_xlsx_b64');
-  if(!b64){alert('Sube el archivo xlsx desde la pantalla inicial para poder descargar el Excel etiquetado.');return;}
-  const wb=XLSX.read(b64,{type:'base64'});
   const per=(localStorage.getItem('ggr_periodo')||'').replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
-  XLSX.writeFile(wb,'Bitacora_GGR_etiquetada'+(per?'_'+per:'')+'.xlsx');
+  const req=indexedDB.open('ggr_idb',1);
+  req.onupgradeneeded=e=>e.target.result.createObjectStore('xlsx');
+  req.onsuccess=e=>{
+    const db=e.target.result;
+    const tx=db.transaction('xlsx','readonly');
+    const get=tx.objectStore('xlsx').get('wb_b64');
+    get.onsuccess=()=>{
+      const b64=get.result;
+      if(!b64){alert('Sube el archivo xlsx desde la pantalla inicial para poder descargar el Excel etiquetado.');return;}
+      const wb=XLSX.read(b64,{type:'base64'});
+      XLSX.writeFile(wb,'Bitacora_GGR_etiquetada'+(per?'_'+per:'')+'.xlsx');
+    };
+    get.onerror=()=>alert('Error al leer el archivo. Por favor sube el xlsx nuevamente.');
+  };
+  req.onerror=()=>alert('Error de almacenamiento. Por favor sube el xlsx nuevamente.');
 }
 
 // INIT
