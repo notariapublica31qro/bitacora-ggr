@@ -3102,7 +3102,7 @@ function dlCSV(headers, rows, filename) {
 
 // ── Exportar Excel GGR ────────────────────────────────────────────────────
 function exportGGRExcel(){
-  const b64=localStorage.getItem('ggr_xlsx_b64');
+  const b64=sessionStorage.getItem('ggr_xlsx_b64');
   if(!b64){alert('Sube el archivo xlsx desde la pantalla inicial para poder descargar el Excel etiquetado.');return;}
   const wb=XLSX.read(b64,{type:'base64'});
   const per=(localStorage.getItem('ggr_periodo')||'').replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
