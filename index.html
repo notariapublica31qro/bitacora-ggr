@@ -510,6 +510,21 @@ function processWorkbook(rows){
 function setProgress(pct,label){document.getElementById('progressBar').style.width=pct+'%';document.getElementById('progressLabel').textContent=label;}
 function showError(msg){const el=document.getElementById('errorMsg');el.textContent=msg;el.style.display='block';}
 
+function saveToIDB(b64){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open('ggr_idb',1);
+    req.onupgradeneeded=e=>e.target.result.createObjectStore('xlsx');
+    req.onsuccess=e=>{
+      const db=e.target.result;
+      const tx=db.transaction('xlsx','readwrite');
+      tx.objectStore('xlsx').put(b64,'wb_b64');
+      tx.oncomplete=resolve;
+      tx.onerror=reject;
+    };
+    req.onerror=reject;
+  });
+}
+
 async function handleFile(file){
   if(!file||!file.name.endsWith('.xlsx')){showError('Por favor sube un archivo .xlsx');return;}
   document.getElementById('errorMsg').style.display='none';
@@ -537,9 +552,12 @@ async function handleFile(file){
     localStorage.setItem('ggr_periodo',res.periodo);
     localStorage.setItem('ggr_seg',JSON.stringify({se:res.segSe,T:res.T}));
 
-    setProgress(100,'¡Listo!');
-    document.getElementById('progressWrap').style.display='none';
-    document.getElementById('actions').style.display='flex';
+    setProgress(90,'Guardando archivo etiquetado…');
+    const xlsxB64=XLSX.write(_wb,{type:'base64',bookType:'xlsx'});
+    await saveToIDB(xlsxB64);
+    setProgress(100,'¡Listo! Abriendo reporte…');
+    await new Promise(r=>setTimeout(r,700));
+    verReporte();
   }catch(err){
     setProgress(0,'');
     showError('Error al procesar: '+err.message);
