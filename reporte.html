@@ -707,8 +707,8 @@ function getTabRows(tab){
   if(tab==='notifcat')   return getNotifcatRows();
   if(tab==='td')         return (DATA.al.td||[]);
   if(tab==='firmas')     return (DATA.al.firmas||[]);
-  if(tab==='rpp45')      return (DATA.al.rpp45||[]);
-  if(tab==='rpp90solo')  return (DATA.al.rpp90solo||[]);
+  if(tab==='rpp45')      return (DATA.al.rpp45||[]).filter(r=>DATA_PE_ESCS.has(r.e));
+  if(tab==='rpp90solo')  return (DATA.al.rpp90solo||[]).filter(r=>DATA_PE_ESCS.has(r.e));
   if(tab==='bancos90')   return (DATA.al.bancos90||[]);
   if(tab==='infonavit90')return (DATA.al.infonavit90||[]);
   if(tab==='fovissste90')return (DATA.al.fovissste90||[]);
