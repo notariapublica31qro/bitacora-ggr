@@ -3032,7 +3032,7 @@ function printAl(){
 function updateAlVCounts(){
   try {
     const saved = alVFilter;
-    alVFilter = '';      const allRows = getAlRows();
+    alVFilter = 'true';  const allRows = getAlRows();
     alVFilter = 'false'; const pvRows  = getAlRows();
     alVFilter = 'true';  const veRows  = getAlRows();
     alVFilter = saved;
