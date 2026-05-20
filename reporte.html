@@ -3031,18 +3031,14 @@ function printAl(){
 }
 function updateAlVCounts(){
   try {
-    const ab = pieAbKey;
-    const filt = arr => ab ? (arr||[]).filter(r=>r.ab===ab) : (arr||[]);
-    const pv = filt(getPorVencerRows(curTab));
-    const ve = filt(getTabRows(curTab));
-    const seen = new Map();
-    [...pv, ...ve].forEach(r=>{ if(!seen.has(r.e)||r.d>seen.get(r.e).d) seen.set(r.e,r); });
-    // Tab Todos: excluir escrituras FF (no en DATA.pe) salvo excepción Bancos/Infonavit/Fovissste
-    if(curTab==='todos') [...seen.keys()].forEach(e=>{ if(!DATA_PE_ESCS.has(e)&&!bancosInfoFoviEscs.has(e)) seen.delete(e); });
-    const todasN = seen.size;
-    const elAll = document.getElementById('cnt-v-all'); if(elAll) elAll.textContent = String(todasN);
-    const elPv  = document.getElementById('cnt-v-pv');  if(elPv)  elPv.textContent  = String(pv.length);
-    const elVe  = document.getElementById('cnt-v-ve');  if(elVe)  elVe.textContent  = String(ve.length);
+    const saved = alVFilter;
+    alVFilter = '';      const allRows = getAlRows();
+    alVFilter = 'false'; const pvRows  = getAlRows();
+    alVFilter = 'true';  const veRows  = getAlRows();
+    alVFilter = saved;
+    const elAll = document.getElementById('cnt-v-all'); if(elAll) elAll.textContent = String(allRows.length);
+    const elPv  = document.getElementById('cnt-v-pv');  if(elPv)  elPv.textContent  = String(pvRows.length);
+    const elVe  = document.getElementById('cnt-v-ve');  if(elVe)  elVe.textContent  = String(veRows.length);
   } catch(e) { console.error('updateAlVCounts error:', e); }
 }
 function updateAlCounts(){
