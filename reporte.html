@@ -3045,7 +3045,7 @@ function updateAlCounts(){
   const savedTab=curTab, savedAlV=alVFilter;
   ['todos','firmas','td','notifcat','rpp45','rpp90solo','bancos90','infonavit90','fovissste90'].forEach(k=>{
     const el=document.getElementById('cnt-'+k); if(!el) return;
-    curTab=k; alVFilter='';
+    curTab=k; alVFilter='true';
     el.textContent=getAlRows().length;
   });
   curTab=savedTab; alVFilter=savedAlV;
