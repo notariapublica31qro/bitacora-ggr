@@ -2727,9 +2727,9 @@ function getPorVencerRows(tab){
       return d>=90-PV_DAYS && d<90;
     }).map(r=>mk(r,90));
   }
-  if(tab==='bancos90')    return DATA.pe.filter(r=>r.ba&&ok(r,150)).map(r=>mk(r,150));
-  if(tab==='infonavit90') return DATA.pe.filter(r=>r.infonavit&&ok(r,150)).map(r=>mk(r,150));
-  if(tab==='fovissste90') return DATA.pe.filter(r=>r.fovissste&&ok(r,150)).map(r=>mk(r,150));
+  if(tab==='bancos90')    return [...DATA.pe,...(DATA_CO||[]).filter(r=>r.es!=='CONCLUIDO')].filter(r=>r.ba&&ok(r,150)).map(r=>mk(r,150));
+  if(tab==='infonavit90') return [...DATA.pe,...(DATA_CO||[]).filter(r=>r.es!=='CONCLUIDO')].filter(r=>r.infonavit&&ok(r,150)).map(r=>mk(r,150));
+  if(tab==='fovissste90') return [...DATA.pe,...(DATA_CO||[]).filter(r=>r.es!=='CONCLUIDO')].filter(r=>r.fovissste&&ok(r,150)).map(r=>mk(r,150));
   return [];
 }
 function getAlRows(){
