@@ -3042,14 +3042,14 @@ function updateAlVCounts(){
   } catch(e) { console.error('updateAlVCounts error:', e); }
 }
 function updateAlCounts(){
+  const savedTab=curTab, savedAlV=alVFilter;
   ['todos','firmas','td','notifcat','rpp45','rpp90solo','bancos90','infonavit90','fovissste90'].forEach(k=>{
     const el=document.getElementById('cnt-'+k); if(!el) return;
-    const seen=new Map();
-    [...getPorVencerRows(k),...getTabRows(k)].forEach(r=>{
-      if(!pieAbKey||r.ab===pieAbKey) seen.set(r.e,true);
-    });
-    el.textContent=seen.size;
+    curTab=k; alVFilter='';
+    el.textContent=getAlRows().length;
   });
+  curTab=savedTab; alVFilter=savedAlV;
+  requestAnimationFrame(syncAlVBtnSizes);
 }
 updateAlCounts();
 updateAlVCounts();
