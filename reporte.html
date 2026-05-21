@@ -2134,6 +2134,15 @@ function renderEx() {
     });
   }
 
+  // Colapsar filas vacías: mostrar máximo 1 al final
+  var _seenEmpty = false;
+  sortedIdx = sortedIdx.filter(function(i){
+    var r = EX_DATA[i];
+    var isEmpty = !r.xp && !r.cl && !r.op && !r.td && !r.ac && !r.mu && !r.es && !r.tr;
+    if(isEmpty){ if(_seenEmpty) return false; _seenEmpty = true; }
+    return true;
+  });
+
   const inputStyle = 'width:100%;box-sizing:border-box;background:transparent;border:1px solid transparent;border-radius:3px;color:var(--text);font-size:.82rem;font-family:inherit;padding:2px 5px;outline:none;text-align:center;';
   const inputStyleBold = inputStyle + 'font-weight:700;';
   const taStyle   = 'width:100%;box-sizing:border-box;resize:none;overflow:hidden;background:transparent;border:1px solid transparent;border-radius:3px;color:var(--text);font-size:.82rem;font-family:inherit;padding:2px 5px;line-height:1.4;text-align:center;transition:height .15s;';
