@@ -2886,24 +2886,21 @@ function processWorkbook(rows){
 }
 
 // ── UI helpers ─────────────────────────────────────────────────────────────
-function setProgress(pct,label){document.getElementById('progressBar').style.width=pct+'%';document.getElementById('progressLabel').textContent=label;}
-function showError(msg){const el=document.getElementById('errorMsg');el.textContent=msg;el.style.display='block';}
 
-async function handleFile(file){
-  if(!file||!file.name.endsWith('.xlsx')){showError('Por favor sube un archivo .xlsx');return;}
-  document.getElementById('errorMsg').style.display='none';
-  document.getElementById('progressWrap').style.display='block';
-  document.getElementById('actions').style.display='none';
-  document.getElementById('statsBox').style.display='none';
-  setProgress(10,'Leyendo archivo…');
+function xlsxSetProgress(pct,label){document.getElementById('xlsx-progress-bar').style.width=pct+'%';document.getElementById('xlsx-progress-label').textContent=label;}
+function xlsxShowError(msg){const el=document.getElementById('xlsx-error-msg');el.textContent=msg;el.style.display='block';}
+async function handleXlsxModal(file){
+  if(!file||!file.name.endsWith('.xlsx')){xlsxShowError('Por favor sube un archivo .xlsx');return;}
+  document.getElementById('xlsx-error-msg').style.display='none';
+  document.getElementById('xlsx-progress-wrap').style.display='block';
+  document.getElementById('xlsx-drop').style.display='none';
   try{
     const buf=await file.arrayBuffer();
-    setProgress(30,'Procesando escrituras…');await new Promise(r=>setTimeout(r,50));
+    xlsxSetProgress(20,'Leyendo archivo…');await new Promise(r=>setTimeout(r,50));
     const rows=await parseXlsxRows(buf);
-    setProgress(60,'Aplicando reglas de etiquetado…');await new Promise(r=>setTimeout(r,50));
+    xlsxSetProgress(50,'Aplicando reglas de etiquetado…');await new Promise(r=>setTimeout(r,50));
     const res=processWorkbook(rows);
-    setProgress(85,'Guardando datos del reporte…');await new Promise(r=>setTimeout(r,50));
-
+    xlsxSetProgress(80,'Guardando datos del reporte…');await new Promise(r=>setTimeout(r,50));
     localStorage.setItem('ggr_data',JSON.stringify(res.DATA));
     localStorage.setItem('ggr_data_me',JSON.stringify(res.DATA_ME));
     localStorage.setItem('ggr_data_yr',JSON.stringify(res.DATA_YR));
@@ -2915,39 +2912,30 @@ async function handleFile(file){
     localStorage.setItem('ggr_ref_str',res.refStr);
     localStorage.setItem('ggr_periodo',res.periodo);
     localStorage.setItem('ggr_seg',JSON.stringify({se:res.segSe,T:res.T}));
-
-    setProgress(100,'¡Listo! Abriendo reporte…');
+    xlsxSetProgress(100,'¡Listo! Recargando reporte…');
     await new Promise(r=>setTimeout(r,700));
-    verReporte();
+    location.reload();
   }catch(err){
-    setProgress(0,'');
-    showError('Error al procesar: '+err.message);
-    console.error(err);
+    xlsxShowError('Error al procesar: '+err.message);
+    document.getElementById('xlsx-drop').style.display='block';
+    document.getElementById('xlsx-progress-wrap').style.display='none';
   }
 }
-
-function verReporte(){window.location.href='reporte.html';}
-function descargarXlsx(){if(!_wb)return;XLSX.writeFile(_wb,'Bitacora GGR etiquetada.xlsx');}
-
-document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
-const dz=document.getElementById('dropZone');
-dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
-dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
-dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
-</script>
-</body>
-</html>
-
-function xlsxSetProgress(pct,label){document.getElementById('xlsx-progress-bar').style.width=pct+'%';document.getElementById('xlsx-progress-label').textContent=label;}
-function xlsxShowError(msg){const el=document.getElementById('xlsx-error-msg');el.textContent=msg;el.style.display='block';}
-async function handleXlsxModal(file){if(!file||!file.name.endsWith('.xlsx')){xlsxShowError('Por favor sube un archivo .xlsx');return;}document.getElementById('xlsx-error-msg').style.display='none';document.getElementById('xlsx-progress-wrap').style.display='block';document.getElementById('xlsx-drop').style.display='none';try{const buf=await file.arrayBuffer();xlsxSetProgress(20,'Leyendo archivo…');await new Promise(r=>setTimeout(r,50));const rows=await parseXlsxRows(buf);xlsxSetProgress(50,'Aplicando reglas de etiquetado…');await new Promise(r=>setTimeout(r,50));const res=processWorkbook(rows);xlsxSetProgress(80,'Guardando datos del reporte…');await new Promise(r=>setTimeout(r,50));localStorage.setItem('ggr_data',JSON.stringify(res.DATA));localStorage.setItem('ggr_data_me',JSON.stringify(res.DATA_ME));localStorage.setItem('ggr_data_yr',JSON.stringify(res.DATA_YR));localStorage.setItem('ggr_data_ab_me',JSON.stringify(res.DATA_AB_ME));localStorage.setItem('ggr_data_co',JSON.stringify(res.DATA_CO));localStorage.setItem('ggr_ref_mes',res.refMes);localStorage.setItem('ggr_ref_dia',res.refDia);localStorage.setItem('ggr_ref_anio',res.refAnio);localStorage.setItem('ggr_ref_str',res.refStr);localStorage.setItem('ggr_periodo',res.periodo);localStorage.setItem('ggr_seg',JSON.stringify({se:res.segSe,T:res.T}));xlsxSetProgress(100,'¡Listo! Recargando reporte…');await new Promise(r=>setTimeout(r,700));location.reload();}catch(err){xlsxShowError('Error al procesar: '+err.message);document.getElementById('xlsx-drop').style.display='block';document.getElementById('xlsx-progress-wrap').style.display='none';}}
-window.openXlsxModal=function(){const ov=document.getElementById('xlsx-modal-overlay');ov.style.display='flex';document.getElementById('xlsx-error-msg').style.display='none';document.getElementById('xlsx-progress-wrap').style.display='none';document.getElementById('xlsx-drop').style.display='block';document.getElementById('xlsx-progress-bar').style.width='0%';document.getElementById('xlsx-file-input').value='';};
+window.openXlsxModal=function(){
+  const ov=document.getElementById('xlsx-modal-overlay');ov.style.display='flex';
+  document.getElementById('xlsx-error-msg').style.display='none';
+  document.getElementById('xlsx-progress-wrap').style.display='none';
+  document.getElementById('xlsx-drop').style.display='block';
+  document.getElementById('xlsx-progress-bar').style.width='0%';
+  document.getElementById('xlsx-file-input').value='';
+};
 window.closeXlsxModal=function(){document.getElementById('xlsx-modal-overlay').style.display='none';};
 window.handleXlsxModal=handleXlsxModal;
 })();
 </script>
-<!-- ═══ MODAL CARGA XLSX ═══ -->
-<div id="xlsx-modal-overlay" onclick="if(event.target===this)closeXlsxModal()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);align-items:center;justify-content:center;"><div style="background:#1e293b;border-radius:16px;padding:28px 30px;width:min(520px,92vw);box-shadow:0 12px 60px rgba(0,0,0,.6);border:1px solid #334155;position:relative;"><button onclick="closeXlsxModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#64748b;font-size:1.3rem;cursor:pointer;line-height:1;">&#10005;</button><div style="font-size:.62rem;color:#a37b54;font-weight:800;letter-spacing:.22em;text-transform:uppercase;margin-bottom:4px;">Actualizar Bitácora</div><div style="font-size:1.22rem;font-weight:900;color:#f8fafc;margin-bottom:18px;">Cargar nuevo archivo Excel</div><div id="xlsx-drop" onclick="document.getElementById('xlsx-file-input').click()" style="border:2px dashed #334155;border-radius:10px;padding:36px 24px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.03);" ondragover="event.preventDefault();this.style.borderColor='#a37b54';this.style.background='rgba(163,123,84,.1)'" ondragleave="this.style.borderColor='#334155';this.style.background='rgba(255,255,255,.03)'" ondrop="event.preventDefault();this.style.borderColor='#334155';this.style.background='rgba(255,255,255,.03)';if(event.dataTransfer.files[0])handleXlsxModal(event.dataTransfer.files[0])"><input type="file" id="xlsx-file-input" accept=".xlsx" style="display:none" onchange="if(this.files[0])handleXlsxModal(this.files[0])"><div style="font-size:2rem;margin-bottom:10px;">📈</div><div style="font-weight:800;font-size:.92rem;color:#e2e8f0;margin-bottom:5px;">Arrastra tu bitácora aquí</div><div style="color:#64748b;font-size:.76rem;line-height:1.55;">o haz clic para seleccionar el archivo .xlsx</div></div><div id="xlsx-progress-wrap" style="display:none;margin-top:18px;"><div style="background:rgba(0,0,0,.3);border-radius:8px;height:6px;overflow:hidden;margin-bottom:8px;"><div id="xlsx-progress-bar" style="background:linear-gradient(90deg,#a37b54,#c4956a);height:100%;border-radius:8px;transition:width .3s;width:0%"></div></div><div id="xlsx-progress-label" style="color:#94a3b8;font-size:.74rem;text-align:center;">Procesando…</div></div><div id="xlsx-error-msg" style="display:none;color:#fca5a5;font-size:.74rem;margin-top:10px;white-space:pre-wrap;font-family:monospace;"></div><div style="color:#475569;font-size:.67rem;text-align:center;margin-top:16px;">Los datos se procesan 100% en tu navegador &middot; nunca salen de tu equipo</div></div></div><!-- ═══ /MODAL ═══ -->
+<!-- MODAL CARGA XLSX -->
+<div id="xlsx-modal-overlay" onclick="if(event.target===this)closeXlsxModal()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);align-items:center;justify-content:center;"><div style="background:#1e293b;border-radius:16px;padding:28px 30px;width:min(520px,92vw);box-shadow:0 12px 60px rgba(0,0,0,.6);border:1px solid #334155;position:relative;"><button onclick="closeXlsxModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#64748b;font-size:1.3rem;cursor:pointer;line-height:1;">&#10005;</button><div style="font-size:.62rem;color:#a37b54;font-weight:800;letter-spacing:.22em;text-transform:uppercase;margin-bottom:4px;">Actualizar Bitácora</div><div style="font-size:1.22rem;font-weight:900;color:#f8fafc;margin-bottom:18px;">Cargar nuevo archivo Excel</div><div id="xlsx-drop" onclick="document.getElementById('xlsx-file-input').click()" style="border:2px dashed #334155;border-radius:10px;padding:36px 24px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.03);" ondragover="event.preventDefault();this.style.borderColor='#a37b54';this.style.background='rgba(163,123,84,.1)'" ondragleave="this.style.borderColor='#334155';this.style.background='rgba(255,255,255,.03)'" ondrop="event.preventDefault();this.style.borderColor='#334155';this.style.background='rgba(255,255,255,.03)';if(event.dataTransfer.files[0])handleXlsxModal(event.dataTransfer.files[0])"><input type="file" id="xlsx-file-input" accept=".xlsx" style="display:none" onchange="if(this.files[0])handleXlsxModal(this.files[0])"><div style="font-size:2rem;margin-bottom:10px;">📈</div><div style="font-weight:800;font-size:.92rem;color:#e2e8f0;margin-bottom:5px;">Arrastra tu bitácora aquí</div><div style="color:#64748b;font-size:.76rem;line-height:1.55;">o haz clic para seleccionar el archivo .xlsx</div></div><div id="xlsx-progress-wrap" style="display:none;margin-top:18px;"><div style="background:rgba(0,0,0,.3);border-radius:8px;height:6px;overflow:hidden;margin-bottom:8px;"><div id="xlsx-progress-bar" style="background:linear-gradient(90deg,#a37b54,#c4956a);height:100%;border-radius:8px;transition:width .3s;width:0%"></div></div><div id="xlsx-progress-label" style="color:#94a3b8;font-size:.74rem;text-align:center;">Procesando…</div></div><div id="xlsx-error-msg" style="display:none;color:#fca5a5;font-size:.74rem;margin-top:10px;white-space:pre-wrap;font-family:monospace;"></div><div style="color:#475569;font-size:.67rem;text-align:center;margin-top:16px;">Los datos se procesan 100% en tu navegador</div></div></div>
+<!-- /MODAL CARGA XLSX -->
 </body></html>`;
 }
 
