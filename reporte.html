@@ -1688,6 +1688,7 @@ function clearExRow(ri) {
   EX_DATA[ri] = Object.assign({}, empty);
   selectedExRow = null;
   renderEx();
+  try { saveExpedientesDebounced(); } catch(e) {}
 }
 
 function undoExRow() {
@@ -1696,6 +1697,7 @@ function undoExRow() {
   if(!EX_DATA || !EX_DATA[last.ri]) return;
   EX_DATA[last.ri] = Object.assign({}, last.data);
   renderEx();
+  try { saveExpedientesDebounced(); } catch(e) {}
 }
 
 document.addEventListener('keydown', function(e){
