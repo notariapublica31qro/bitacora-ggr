@@ -3764,7 +3764,11 @@ async function ggrHandleXlsx(file) {
     localStorage.setItem('ggr_ref_str',    res.refStr);
     localStorage.setItem('ggr_periodo',    res.periodo);
     localStorage.setItem('ggr_seg',        JSON.stringify({se:res.segSe,T:res.T}));
-    location.reload();
+    // Actualizar calendario inmediatamente antes del reload
+    var cm=document.getElementById('cal-mes'),cd=document.getElementById('cal-dia'),ca=document.getElementById('cal-anio');
+    if(cm)cm.textContent=res.refMes; if(cd)cd.textContent=res.refDia; if(ca)ca.textContent=res.refAnio;
+    // Hard refresh con cache-busting para evitar valores viejos del caché
+    window.location.replace(window.location.pathname+'?r='+Date.now()+(window.location.hash||''));
   } catch(err) {
     alert('Error al procesar xlsx:\n' + err.message);
     console.error(err);
