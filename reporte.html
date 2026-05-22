@@ -2082,8 +2082,8 @@ function renderEx() {
     {label:'CLIENTE',    w:'210px', key:'cl', fs:'.80rem'},
     {label:'OPERACIÓN',  w:'190px', key:'op', fs:'.80rem'},
     {label:'TD',         w:'45px',  key:'td', fs:'.90rem'},
-    {label:'MUNICIPIO',  w:'105px', key:'mu', fs:'.80rem'},
-    {label:'BANCOS',     w:'100px', key:'ac', fs:'.80rem'},
+    {label:'MUNICIPIO',  w:'105px', key:'ac', fs:'.80rem'},
+    {label:'BANCOS',     w:'100px', key:'mu', fs:'.80rem'},
     {label:'ESTATUS',    w:'150px', key:'es', fs:'.80rem'},
     {label:'TRÁMITE',    w:'180px', key:'tr', fs:'.80rem'},
   ];
@@ -2281,7 +2281,7 @@ function positionExSelectors() {
 function exportExCSV() {
   if(!EX_DATA) return;
   const headers = ['EXPEDIENTE','CLIENTE','OPERACIÓN','TD','MUNICIPIO','BANCOS','ESTATUS','TRÁMITE'];
-  const keys    = ['xp','cl','op','td','mu','ac','es','tr'];
+  const keys    = ['xp','cl','op','td','ac','mu','es','tr'];
   const rows    = EX_DATA.filter(r => r.xp||r.cl||r.op).map(r => keys.map(k => (r[k]||'').trim()));
   dlCSV(headers, rows, 'Expedientes_GGR.csv');
 }
@@ -2299,7 +2299,7 @@ function exportExPDF() {
   doc.text('Bitácora de Escrituras – '+dia+'/'+mes+'/'+anio, 28, 38);
   doc.setTextColor(0);
   const headers = ['EXPEDIENTE','CLIENTE','OPERACIÓN','TD','MUNICIPIO','BANCOS','ESTATUS','TRÁMITE'];
-  const keys    = ['xp','cl','op','td','mu','ac','es','tr'];
+  const keys    = ['xp','cl','op','td','ac','mu','es','tr'];
   const rows    = (EX_DATA||[]).filter(r => r.xp||r.cl||r.op).map(r => keys.map(k => (r[k]||'').trim()));
   doc.autoTable({
     head: [headers],
