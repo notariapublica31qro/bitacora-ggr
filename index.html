@@ -219,7 +219,7 @@ function inferTD(r){const m=r['MDC. Entrega Exp Unidad Gestión'],e=r['TD. Elab.
 function inferRPP(r){
   const fi=r['ESC. Entrega Firmas Completas'],ci=r['CIERRE. Expedición de Testimonio'],pagoHecho=['RPP. Pago RPP','RPP. Digitalización Pago RPP','SIGER. Pago RPC','SIGER. Digitalización de Pago RPC'].some(c=>hasDate(r[c]));
   const lt=String(r['Lleva TD']||'').trim(),cs=r['CAT. Solicitud'],cd=r['CAT. Dig Notificacion Catastral'],cnp=lt==='SI'&&hasDate(cs)&&noDate(cd)&&!isDash(cd);
-  if(!hasDate(fi))return'FOLIO';if(!hasDate(ci))return'CIERRE';if(cnp)return'NOTIF CAT';if(!pagoHecho)return'PAGO';return'ENTRADA';
+  if(!hasDate(fi))return'FOLIO';if(!hasDate(ci))return cnp?'CIERRE-NOTIF CAT':'CIERRE';if(cnp)return'NOTIF CAT';if(!pagoHecho)return'PAGO';return'ENTRADA';
 }
 
 // ── labelRow ───────────────────────────────────────────────────────────────
