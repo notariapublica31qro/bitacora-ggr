@@ -691,7 +691,10 @@ function abPill(ab){
   return `<span style="display:inline-block;padding:2px 7px;border-radius:7px;font-size:.68rem;font-weight:700;background:${c}22;color:${c};border:1px solid ${c}44">${ab}</span>`;
 }
 
-const REF_DATE = new Date('2026-05-02');
+// REF_DATE: usa la fecha de corte del reporte (sessionStorage) para que calcD coincida con dNat
+const _ggr_ref_raw=(()=>{try{return sessionStorage.getItem('ggr_ref_str')||''}catch(e){return ''}})();
+const _ggr_ref_m=_ggr_ref_raw.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+const REF_DATE=_ggr_ref_m?new Date(+_ggr_ref_m[3],+_ggr_ref_m[2]-1,+_ggr_ref_m[1]):new Date('2026-05-02');
 const NOTIFCAT_LIM = 25;
 const peMap = {};
 DATA.pe.forEach(r=>peMap[r.e]=r);
@@ -1642,15 +1645,14 @@ function initExData(n){
   EX_DATA = [];
   for(var i=0;i<n;i++) EX_DATA.push({xp:'',cl:'',op:'',td:'',ac:'',mu:'',es:'',tr:''});
 }
-// Limpia filas sin expediente válido y filas cuyo xp ya existe como escritura formal
+// Limpia solo filas completamente vacías (sin xp) — NO tocar filas con datos
 function cleanExByEscrituras(){
   if(!EX_DATA) return false;
-  var allEsc = [...(DATA.pe||[]), ...(DATA_CO||[])];
-  var escXpSet = new Set(allEsc.map(function(r){ return r.xp ? String(r.xp).trim() : ''; }).filter(Boolean));
   var changed = false;
   EX_DATA.forEach(function(row){
     var xp = row.xp ? String(row.xp).trim() : '';
-    if(!xp || xp === '-' || escXpSet.has(xp)){
+    // Solo limpiar si xp es explícitamente un guión (marcador de vacío)
+    if(xp === '-'){
       row.xp=''; row.cl=''; row.op=''; row.td=''; row.ac=''; row.mu=''; row.es=''; row.tr='';
       changed = true;
     }
