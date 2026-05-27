@@ -3458,7 +3458,7 @@ function inferTD(r){const m=r['MDC. Entrega Exp Unidad Gestión'],e=r['TD. Elab.
 function inferRPP(r){
   const fi=r['ESC. Entrega Firmas Completas'],ci=r['CIERRE. Expedición de Testimonio'],pagoHecho=['RPP. Pago RPP','RPP. Digitalización Pago RPP','SIGER. Pago RPC','SIGER. Digitalización de Pago RPC'].some(c=>hasDate(r[c]));
   const lt=String(r['Lleva TD']||'').trim(),cs=r['CAT. Solicitud'],cd=r['CAT. Dig Notificacion Catastral'],cnp=lt==='SI'&&hasDate(cs)&&noDate(cd)&&!isDash(cd);
-  if(!hasDate(fi))return'FOLIO';if(!hasDate(ci))return'CIERRE';if(cnp)return'NOTIF CAT';if(!pagoHecho)return'PAGO';return'ENTRADA';
+  if(!hasDate(fi))return'FOLIO';if(!hasDate(ci))return cnp?'CIERRE-NOTIF CAT':'CIERRE';if(cnp)return'NOTIF CAT';if(!pagoHecho)return'PAGO';return'ENTRADA';
 }
 
 // ── labelRow ───────────────────────────────────────────────────────────────
@@ -3525,85 +3525,17 @@ function diasHabiles(s,e){
   return days;
 }
 
-// ── Parser xlsx sin SheetJS (evita bug SSF/indexOf en CDN) ───────────────
+// ── Parser xlsx con SheetJS ───────────────────────────────────────────────
 async function parseXlsxRows(buf){
-  const NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main';
-  const zip=await JSZip.loadAsync(buf);
-
-  // Detectar qué estilos (s=N) son fechas
-  const dateStyles=new Set();
-  const sFile=zip.file('xl/styles.xml');
-  if(sFile){
-    const sxml=await sFile.async('text');
-    const sdoc=new DOMParser().parseFromString(sxml,'application/xml');
-    const DATE_IDS=new Set([14,15,16,17,18,19,20,21,22,27,28,29,30,31,32,33,34,35,36,45,46,47,50,51,52,53,54,55,56,57,58]);
-    const custDate=new Set();
-    for(const nf of sdoc.getElementsByTagNameNS(NS,'numFmt')){
-      const id=parseInt(nf.getAttribute('numFmtId')||'0');
-      const fmt=(nf.getAttribute('formatCode')||'').replace(/"[^"]*"/g,'');
-      if(/[yYdDhH]/.test(fmt))custDate.add(id);
+  const wb=XLSX.read(buf,{type:'array',cellDates:true,raw:false});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',blankrows:false});
+  return raw.map(row=>row.map(v=>{
+    if(v instanceof Date&&!isNaN(v.getTime())){
+      return v.getFullYear()+'-'+String(v.getMonth()+1).padStart(2,'0')+'-'+String(v.getDate()).padStart(2,'0');
     }
-    let xi=0;
-    for(const xf of sdoc.getElementsByTagNameNS(NS,'xf')){
-      if(xf.parentElement&&xf.parentElement.localName==='cellXfs'){
-        const fid=parseInt(xf.getAttribute('numFmtId')||'0');
-        if(DATE_IDS.has(fid)||custDate.has(fid))dateStyles.add(String(xi));
-        xi++;
-      }
-    }
-  }
-
-  // Shared strings (por si acaso)
-  const ss=[];
-  const ssFile=zip.file('xl/sharedStrings.xml');
-  if(ssFile){
-    const ssxml=await ssFile.async('text');
-    const ssdoc=new DOMParser().parseFromString(ssxml,'application/xml');
-    for(const si of ssdoc.getElementsByTagNameNS(NS,'si')){
-      const t=si.getElementsByTagNameNS(NS,'t');
-      ss.push([...t].map(x=>x.textContent||'').join(''));
-    }
-  }
-
-  function serial2str(n){
-    const d=new Date(Math.round((n-25569)*86400000));
-    return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
-  }
-  function col2idx(r){let i=0;for(const ch of(r.match(/^[A-Z]+/)||['A'])[0])i=i*26+ch.charCodeAt(0)-64;return i-1;}
-
-  const wsFile=zip.file('xl/worksheets/sheet1.xml');
-  if(!wsFile)throw new Error('No se encontró sheet1.xml en el archivo xlsx');
-  const wxml=await wsFile.async('text');
-  const wdoc=new DOMParser().parseFromString(wxml,'application/xml');
-
-  const rows=[];
-  for(const rowEl of wdoc.getElementsByTagNameNS(NS,'row')){
-    const arr=[];
-    for(const c of rowEl.getElementsByTagNameNS(NS,'c')){
-      const ref=c.getAttribute('r')||'A1';
-      const t=c.getAttribute('t')||'n';
-      const s=c.getAttribute('s')||'';
-      const ci=col2idx(ref);
-      while(arr.length<ci)arr.push('');
-      let val='';
-      if(t==='inlineStr'){
-        const tEl=c.getElementsByTagNameNS(NS,'t')[0];
-        val=tEl?tEl.textContent||'':'';
-      }else if(t==='s'){
-        const vEl=c.getElementsByTagNameNS(NS,'v')[0];
-        val=vEl?ss[parseInt(vEl.textContent||'0')]||'':'';
-      }else{
-        const vEl=c.getElementsByTagNameNS(NS,'v')[0];
-        if(vEl&&vEl.textContent){
-          const num=parseFloat(vEl.textContent);
-          if(!isNaN(num))val=dateStyles.has(s)?serial2str(num):num;
-        }
-      }
-      arr.push(val);
-    }
-    rows.push(arr);
-  }
-  return rows;
+    return v;
+  }));
 }
 
 // ── Procesamiento principal ────────────────────────────────────────────────
