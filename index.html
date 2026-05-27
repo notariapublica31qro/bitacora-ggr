@@ -408,7 +408,9 @@ function processWorkbook(rows){
     if(!isDt(r['ESC. Entrega Firmas Completas'])&&dNat>60)alFirmas.push({...ial,li:60});
     const rppTerm=isDt(r['RPP. Regreso de RPP Testimonio'])||isDt(r['RPP. Captura Dato Inscripción RPP']);
     if(!rppTerm&&!isBa&&!isInfo&&!isFovi){if(isTras&&dNat>90)alRpp90solo.push({...ial,li:90});else if(!isTras&&dNat>30)alRpp90solo.push({...ial,li:30});}
-    if(!rppTerm){if(isBa&&dNat>150)alBancos90.push({...ial,li:150});if(isInfo&&dNat>150)alInfo90.push({...ial,li:150});if(isFovi&&dNat>150)alFovi90.push({...ial,li:150});}
+    if(isBa&&dNat>150)alBancos90.push({...ial,li:150});
+    if(isInfo&&dNat>150)alInfo90.push({...ial,li:150});
+    if(isFovi&&dNat>150)alFovi90.push({...ial,li:150});
   }
 
   const traslativas=[...dataPe,...dataCo].filter(r=>r.td).length;
