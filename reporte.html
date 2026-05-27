@@ -2773,8 +2773,8 @@ function getAlRows(){
   } else {
     rows = getTabRows(curTab).filter(r=>r.v===true);
   }
-  // Tab Todos: excluir escrituras FF (no están en DATA.pe) salvo excepción Bancos/Infonavit/Fovissste
-  if(curTab==='todos') rows=rows.filter(r=>DATA_PE_ESCS.has(r.e)||bancosInfoFoviEscs.has(r.e));
+  // Tab Todos: solo escrituras pendientes (excluye FF aunque tengan alerta Bancos/Infonavit/Fovissste)
+  if(curTab==='todos') rows=rows.filter(r=>DATA_PE_ESCS.has(r.e));
   return rows
     .filter(r=>!pieAbKey||r.ab===pieAbKey)
     .map(r=>{
