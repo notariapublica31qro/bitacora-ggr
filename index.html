@@ -135,9 +135,16 @@ function parseStrDate(s){
   s=s.trim();
   if(!s||s==='-'||s==='*')return null;
   let m;
+  // DD/MM/YYYY (formato México, 2 dígitos)
   m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);if(m)return new Date(+m[3],+m[2]-1,+m[1]);
+  // YYYY-MM-DD
   m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);
+  // DD-MM-YYYY
   m=s.match(/^(\d{2})-(\d{2})-(\d{4})$/);if(m)return new Date(+m[3],+m[2]-1,+m[1]);
+  // M/D/YYYY o MM/DD/YYYY (formato Windows en inglés)
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(m){const mo=+m[1],dy=+m[2],yr=+m[3];if(mo>=1&&mo<=12&&dy>=1&&dy<=31)return new Date(yr,mo-1,dy);}
+  // D/M/YYYY o DD/MM/YYYY sin restricción de 2 dígitos (por si acaso)
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);if(m){const dy=+m[1],mo=+m[2],yr=+m[3];if(mo>=1&&mo<=12&&dy>=1&&dy<=31)return new Date(yr,mo-1,dy);}
   return null;
 }
 function isDt(v){if(v instanceof Date)return!isNaN(v.getTime());if(typeof v==='string')return parseStrDate(v)!==null;if(typeof v==='number'&&v>40000&&v<60000)return true;return false;}
@@ -288,16 +295,24 @@ function diasHabiles(s,e){
 
 // ── Parser xlsx sin SheetJS (evita bug SSF/indexOf en CDN) ───────────────
 async function parseXlsxRows(buf){
-  // Usar SheetJS (ya cargado) para parseo robusto de fechas y hojas
-  const wb=XLSX.read(buf,{type:'array',cellDates:true,raw:false});
+  // cellDates:true convierte seriales a Date objects; NO usar raw:false (rompe fechas en Windows)
+  const wb=XLSX.read(buf,{type:'array',cellDates:true});
   const ws=wb.Sheets[wb.SheetNames[0]];
-  // Obtener filas como array de arrays; fechas llegan como Date objects
-  const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',blankrows:false});
-  // Normalizar: convertir Date objects a string 'YYYY-MM-DD' para consistencia
-  // (isDt/toDt ya maneja Date objects, pero normalizar evita problemas de zona horaria)
+  const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',blankrows:false,raw:true});
+  // Diagnóstico: guardar muestra en localStorage para debug
+  try{
+    const h=raw[0]||[];const r1=raw[1]||[];
+    localStorage.setItem('_dbg_h',JSON.stringify(h.slice(0,60)));
+    localStorage.setItem('_dbg_r1',JSON.stringify(r1.slice(0,60).map(v=>v instanceof Date?'DT:'+v.toISOString():(typeof v==='number'?'N:'+v:String(v).slice(0,25)))));
+  }catch(e){}
   return raw.map(row=>row.map(v=>{
     if(v instanceof Date&&!isNaN(v.getTime())){
       return v.getFullYear()+'-'+String(v.getMonth()+1).padStart(2,'0')+'-'+String(v.getDate()).padStart(2,'0');
+    }
+    // Números: pueden ser seriales de Excel (fecha almacenada como número)
+    if(typeof v==='number'&&v>25569&&v<60000){
+      const d=new Date(Math.round((v-25569)*86400000));
+      return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
     }
     return v;
   }));
