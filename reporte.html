@@ -1945,7 +1945,8 @@ function renderPe(){
   updatePeSgCounts();
   document.getElementById('pe-thead').innerHTML = thHtml(PE_COLS, peSortCol, peSortDir, 'sortPe');
   const filtered = getPeRows();
-  const rows = sortRows(filtered, peSortCol, peSortDir);
+  const enriched = peSortCol==='cm' ? filtered.map(r=>({...r,cm:(window.COMMENTS&&window.COMMENTS[r.e])||''})) : filtered;
+  const rows = sortRows(enriched, peSortCol, peSortDir);
   const total=rows.length;
   if(total===0){
     document.getElementById('pe-tbody').innerHTML=`<tr><td colspan="${PE_COLS.length}" style="text-align:center;padding:1.25rem 1rem;color:var(--muted);font-size:1.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase">SIN ESCRITURAS</td></tr>`;
@@ -2792,7 +2793,8 @@ function getAlRows(){
 function renderAl(){
   document.getElementById('al-thead').innerHTML = thHtml(AL_COLS, alSortCol, alSortDir, 'sortAl');
   const filtered = getAlRows();
-  const rows = sortRows(filtered, alSortCol, alSortDir, 'e', 'asc');
+  const enriched = alSortCol==='cm' ? filtered.map(r=>({...r,cm:(window.COMMENTS&&window.COMMENTS[r.e])||''})) : filtered;
+  const rows = sortRows(enriched, alSortCol, alSortDir, 'e', 'asc');
   const total=rows.length;
   if(total===0){
     document.getElementById('al-tbody').innerHTML=`<tr><td colspan="${AL_COLS.length}" style="text-align:center;padding:1.25rem 1rem;color:var(--muted);font-size:1.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase">SIN URGENTES</td></tr>`;
