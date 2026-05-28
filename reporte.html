@@ -1794,9 +1794,8 @@ function sortRows(rows, col, dir, tie2Col, tie2Dir) {
     }
     return d==='asc' ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
   };
-  const sample = rows.find(r => !isEmpty(r[col]));
-  const sampleVal = sample ? String(sample[col]) : '';
-  const isNumericCol = sampleVal && /^-?\d+(\.\d+)?$/.test(sampleVal.replace(/,/g,''));
+  const samples = rows.filter(r => !isEmpty(r[col])).slice(0, 8);
+  const isNumericCol = samples.length > 0 && samples.every(r => /^-?\d+(\.\d+)?$/.test(String(r[col]).replace(/,/g,'')));
   // Tiebreaker secundario
   const sample2 = tie2Col && rows.find(r => !isEmpty(r[tie2Col]));
   const sampleVal2 = sample2 ? String(sample2[tie2Col]) : '';
