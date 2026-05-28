@@ -3365,8 +3365,7 @@ window.addEventListener('DOMContentLoaded', function(){ setTimeout(loadFromGitHu
 
 
 <!-- ═══ GGR XLSX UPLOAD DIRECTO ═══ -->
-<input type="file" id="ggr-xlsx-input" accept=".xlsx" style="display:none"
-  onchange="if(this.files[0])ggrHandleXlsx(this.files[0]);this.value='';">
+<input type="file" id="ggr-xlsx-input" accept=".xlsx" style="display:none">
 <script>
 // ── Procesamiento xlsx (extraído de index.html) ────────────────────────────
 'use strict';
@@ -3717,6 +3716,15 @@ async function ggrHandleXlsx(file) {
     console.error(err);
   }
 }
-<\/script>
+
+// ── Conectar event listener desde closure (evita problemas de scope global) ──
+(function(){
+  var inp = document.getElementById('ggr-xlsx-input');
+  if(inp) inp.addEventListener('change', function(){
+    if(this.files[0]) ggrHandleXlsx(this.files[0]);
+    this.value = '';
+  });
+})();
+</script>
 <!-- ═══ /GGR XLSX UPLOAD DIRECTO ═══ -->
 </body>
