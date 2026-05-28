@@ -3544,8 +3544,11 @@ async function parseXlsxRows(buf){
 
 // ── Procesamiento principal ────────────────────────────────────────────────
 function processWorkbook(rows){
-  const header=rows[0];
+  const header=rows[0].map(h=>typeof h==='string'?h.trim():h);
   const H={};header.forEach((h,i)=>{if(h)H[h]=i;});
+  const COLS_CLAVE=['Lleva TD','RPP. Solicitud','TD. Digitalización Pago TD','CAT. Dig Notificacion Catastral','Estatus','Tramite','Abogado'];
+  const faltantes=COLS_CLAVE.filter(c=>!(c in H));
+  if(faltantes.length)console.warn('⚠️ Columnas no encontradas:',faltantes,'| Headers detectados:',header.filter(Boolean));
 
   // REF = ayer en CDT (UTC-5)
   const now=new Date();
@@ -3567,7 +3570,7 @@ function processWorkbook(rows){
     const esRaw=row[colEs],esTest=typeof esRaw==='string'?esRaw.trim():'';
     if(esTest&&!VALID_ES.has(esTest)){modRows.push(row.slice());continue;}
     total++;
-    const r={};header.forEach((h,i)=>{if(h)r[h]=row[i]!==undefined?row[i]:null;});
+    const r={};header.forEach((h,i)=>{if(h){const v=row[i];r[h]=v!==undefined?v:null;}});
 
     // Normalizar abogado
     if(typeof r['Abogado']==='string'){
