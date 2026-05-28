@@ -2756,9 +2756,9 @@ function getPorVencerRows(tab){
       return d>=90-PV_DAYS && d<90;
     }).map(r=>mk(r,90));
   }
-  if(tab==='bancos90')    return [...DATA.pe,...(DATA_CO||[]).filter(r=>r.es==='FALTA FINALIZAR')].filter(r=>(r.ba||(r.hasBa&&r.es==='FALTA FINALIZAR'))&&ok(r,150)).map(r=>mk(r,150));
-  if(tab==='infonavit90') return [...DATA.pe,...(DATA_CO||[]).filter(r=>r.es==='FALTA FINALIZAR')].filter(r=>(r.infonavit||(r.hasInfo&&r.es==='FALTA FINALIZAR'))&&ok(r,150)).map(r=>mk(r,150));
-  if(tab==='fovissste90') return [...DATA.pe,...(DATA_CO||[]).filter(r=>r.es==='FALTA FINALIZAR')].filter(r=>(r.fovissste||(r.hasFovi&&r.es==='FALTA FINALIZAR'))&&ok(r,150)).map(r=>mk(r,150));
+  if(tab==='bancos90')    return [...DATA.pe,...(DATA_CO||[]).filter(r=>r.es==='FALTA FINALIZAR')].filter(r=>r.ba&&ok(r,150)).map(r=>mk(r,150));
+  if(tab==='infonavit90') return [...DATA.pe,...(DATA_CO||[]).filter(r=>r.es==='FALTA FINALIZAR')].filter(r=>r.infonavit&&ok(r,150)).map(r=>mk(r,150));
+  if(tab==='fovissste90') return [...DATA.pe,...(DATA_CO||[]).filter(r=>r.es==='FALTA FINALIZAR')].filter(r=>r.fovissste&&ok(r,150)).map(r=>mk(r,150));
   return [];
 }
 function getAlRows(){
@@ -3650,8 +3650,8 @@ function processWorkbook(rows){
     const rppTerm=isDt(r['RPP. Regreso de RPP Testimonio'])||isDt(r['RPP. Captura Dato Inscripción RPP']);
     if(!rppTerm&&!isBa&&!isInfo&&!isFovi){if(isTras&&dNat>90)alRpp90solo.push({...ial,li:90});else if(!isTras&&dNat>30)alRpp90solo.push({...ial,li:30});}
     if(!rppTerm){if(isBa&&dNat>150)alBancos90.push({...ial,li:150});if(isInfo&&dNat>150)alInfo90.push({...ial,li:150});if(isFovi&&dNat>150)alFovi90.push({...ial,li:150});}
-    // FALTA FINALIZAR con banco: incluir aunque rppTerm=true y acuse llenado
-    if(esStr==='FALTA FINALIZAR'&&dNat>150){if(isBaSeg)alBancos90.push({...ial,li:150});if(isInfoSeg)alInfo90.push({...ial,li:150});if(isFoviSeg)alFovi90.push({...ial,li:150});}
+    // FALTA FINALIZAR: incluir aunque rppTerm=true, solo si el acuse correspondiente sigue pendiente
+    if(esStr==='FALTA FINALIZAR'&&dNat>150){if(isBa)alBancos90.push({...ial,li:150});if(isInfo)alInfo90.push({...ial,li:150});if(isFovi)alFovi90.push({...ial,li:150});}
   }
 
   const traslativas=[...dataPe,...dataCo].filter(r=>r.td).length;
