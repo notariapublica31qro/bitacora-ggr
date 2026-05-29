@@ -2140,6 +2140,16 @@ function renderEx() {
     });
   }
 
+  // Filtrar expedientes que ya tienen Escritura asignada en la bitácora
+  var _escXp = new Set(
+    ((DATA.pe||[]).concat(DATA_CO||[])).map(function(r){return (r.xp||'').trim();}).filter(Boolean)
+  );
+  sortedIdx = sortedIdx.filter(function(i){
+    var r = EX_DATA[i];
+    if(!r.xp || !r.xp.trim()) return true; // filas vacías pasan siempre
+    return !_escXp.has(r.xp.trim());
+  });
+
   // Colapsar filas vacías: mostrar máximo 1 al final
   var _seenEmpty = false;
   sortedIdx = sortedIdx.filter(function(i){
