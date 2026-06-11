@@ -347,7 +347,9 @@ function processWorkbook(rows){
     const row=rows[ri];
     if(row.every(v=>v===null||v===undefined||v===''))continue;
     const esRaw=row[colEs];let esTest=typeof esRaw==='string'?esRaw.trim():'';
+    // '-' en Estatus/Tramite/Depende de = espacio en blanco (export crudo): se ignora y se sobreescribe
     if(esTest==='-'){esTest='';row[colEs]='';}
+    [colTr,H['Depende de']].forEach(function(ci){if(ci!=null&&typeof row[ci]==='string'&&row[ci].trim()==='-')row[ci]='';});
     if(esTest&&!VALID_ES.has(esTest)){modRows.push(row.slice());continue;}
     total++;
     const r={};header.forEach((h,i)=>{if(h){const v=row[i];r[h]=v!==undefined?v:null;}});
