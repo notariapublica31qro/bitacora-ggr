@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script>/* migración llaves localStorage ggr_* -> n31_* (una sola vez por navegador) */
+(function(){try{var ks=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('ggr_')===0)ks.push(k);}for(var j=0;j<ks.length;j++){var ok=ks[j],nk='n31_'+ok.slice(4);if(localStorage.getItem(nk)===null){try{localStorage.setItem(nk,localStorage.getItem(ok));}catch(e){}}}}catch(e){}})();</script>
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -475,7 +477,7 @@ function showError(msg){const el=document.getElementById('errorMsg');el.textCont
 
 function saveToIDB(b64){
   return new Promise((resolve,reject)=>{
-    const req=indexedDB.open('ggr_idb',1);
+    const req=indexedDB.open('n31_idb',1);
     req.onupgradeneeded=e=>e.target.result.createObjectStore('xlsx');
     req.onsuccess=e=>{
       const db=e.target.result;
@@ -503,17 +505,17 @@ async function handleFile(file){
     const res=processWorkbook(rows);
     setProgress(85,'Guardando datos del reporte…');await new Promise(r=>setTimeout(r,50));
 
-    localStorage.setItem('ggr_data',JSON.stringify(res.DATA));
-    localStorage.setItem('ggr_data_me',JSON.stringify(res.DATA_ME));
-    localStorage.setItem('ggr_data_yr',JSON.stringify(res.DATA_YR));
-    localStorage.setItem('ggr_data_ab_me',JSON.stringify(res.DATA_AB_ME));
-    localStorage.setItem('ggr_data_co',JSON.stringify(res.DATA_CO));
-    localStorage.setItem('ggr_ref_mes',res.refMes);
-    localStorage.setItem('ggr_ref_dia',res.refDia);
-    localStorage.setItem('ggr_ref_anio',res.refAnio);
-    localStorage.setItem('ggr_ref_str',res.refStr);
-    localStorage.setItem('ggr_periodo',res.periodo);
-    localStorage.setItem('ggr_seg',JSON.stringify({se:res.segSe,T:res.T}));
+    localStorage.setItem('n31_data',JSON.stringify(res.DATA));
+    localStorage.setItem('n31_data_me',JSON.stringify(res.DATA_ME));
+    localStorage.setItem('n31_data_yr',JSON.stringify(res.DATA_YR));
+    localStorage.setItem('n31_data_ab_me',JSON.stringify(res.DATA_AB_ME));
+    localStorage.setItem('n31_data_co',JSON.stringify(res.DATA_CO));
+    localStorage.setItem('n31_ref_mes',res.refMes);
+    localStorage.setItem('n31_ref_dia',res.refDia);
+    localStorage.setItem('n31_ref_anio',res.refAnio);
+    localStorage.setItem('n31_ref_str',res.refStr);
+    localStorage.setItem('n31_periodo',res.periodo);
+    localStorage.setItem('n31_seg',JSON.stringify({se:res.segSe,T:res.T}));
 
     setProgress(90,'Guardando archivo etiquetado…');
     const xlsxB64=XLSX.write(_wb,{type:'base64',bookType:'xlsx'});
