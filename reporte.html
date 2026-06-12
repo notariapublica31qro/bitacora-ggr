@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script>/* migración llaves localStorage ggr_* -> n31_* (una sola vez por navegador) */
+(function(){try{var ks=[];for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('ggr_')===0)ks.push(k);}for(var j=0;j<ks.length;j++){var ok=ks[j],nk='n31_'+ok.slice(4);if(localStorage.getItem(nk)===null){try{localStorage.setItem(nk,localStorage.getItem(ok));}catch(e){}}}}catch(e){}})();</script>
 <meta charset="UTF-8">
 <link rel="icon" type="image/png" href="favicon.png">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -649,11 +651,11 @@ th.col-tr, td.col-tr{width:240px;text-align:center;font-size:.84rem;font-weight:
 </div><!-- /main -->
 
 <script>
-const DATA = JSON.parse(localStorage.getItem('ggr_data') || 'null') || {t:{total:0,traslativas:0,no_traslativas:0,concluido:0,pendientes:0,pct_concluido:0},es:{},ab:{},se:{foraneas:0,constructoras:0,con_bancos:0,con_infonavit:0,con_fovissste:0},me:{},tr:{},al:{td:[],rpp45:[],firmas:[],rpp90:[],pe:[],bancos:[],infonavit:[],fovissste:[],td_pv:[],rpp90solo:[],bancos90:[],infonavit90:[],fovissste90:[]},pe:[]};
-const DATA_ME = JSON.parse(localStorage.getItem('ggr_data_me') || '{}');
-const DATA_YR = JSON.parse(localStorage.getItem('ggr_data_yr') || '{}');
-const DATA_AB_ME = JSON.parse(localStorage.getItem('ggr_data_ab_me') || '{}');
-const DATA_CO = JSON.parse(localStorage.getItem('ggr_data_co') || '[]');
+const DATA = JSON.parse(localStorage.getItem('n31_data') || 'null') || {t:{total:0,traslativas:0,no_traslativas:0,concluido:0,pendientes:0,pct_concluido:0},es:{},ab:{},se:{foraneas:0,constructoras:0,con_bancos:0,con_infonavit:0,con_fovissste:0},me:{},tr:{},al:{td:[],rpp45:[],firmas:[],rpp90:[],pe:[],bancos:[],infonavit:[],fovissste:[],td_pv:[],rpp90solo:[],bancos90:[],infonavit90:[],fovissste90:[]},pe:[]};
+const DATA_ME = JSON.parse(localStorage.getItem('n31_data_me') || '{}');
+const DATA_YR = JSON.parse(localStorage.getItem('n31_data_yr') || '{}');
+const DATA_AB_ME = JSON.parse(localStorage.getItem('n31_data_ab_me') || '{}');
+const DATA_CO = JSON.parse(localStorage.getItem('n31_data_co') || '[]');
 
 
 
@@ -692,7 +694,7 @@ function abPill(ab){
 }
 
 // REF_DATE: usa la fecha de corte del reporte (localStorage) para que calcD coincida con dNat
-const _ggr_ref_raw=(()=>{try{return localStorage.getItem('ggr_ref_str')||''}catch(e){return ''}})();
+const _ggr_ref_raw=(()=>{try{return localStorage.getItem('n31_ref_str')||''}catch(e){return ''}})();
 const _ggr_ref_m=_ggr_ref_raw.match(/^(\d{2})-(\d{2})-(\d{4})$/);
 const REF_DATE=_ggr_ref_m?new Date(+_ggr_ref_m[3],+_ggr_ref_m[2]-1,+_ggr_ref_m[1]):new Date('2026-05-02');
 const NOTIFCAT_LIM = 25;
@@ -2456,7 +2458,7 @@ function _buildPrintHtml(tableId, title) {
 // ── Inicialización desde localStorage (web app mode) ──────────────────
 (function(){
   var _ss = window.localStorage;
-  if(!_ss.getItem('ggr_data')){
+  if(!_ss.getItem('n31_data')){
     // Sin datos: mostrar aviso y redirigir
     document.body.insertAdjacentHTML('beforeend',
       '<div id="no-data-overlay" style="position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Inter,sans-serif;color:#e2e8f0;">'
@@ -2476,11 +2478,11 @@ function _buildPrintHtml(tableId, title) {
   );
 
   // Fecha de referencia
-  var refMes = _ss.getItem('ggr_ref_mes') || '';
-  var refDia  = _ss.getItem('ggr_ref_dia')  || '';
-  var refAnio = _ss.getItem('ggr_ref_anio') || '';
-  var refStr  = _ss.getItem('ggr_ref_str')  || '';
-  var periodo = _ss.getItem('ggr_periodo')  || '';
+  var refMes = _ss.getItem('n31_ref_mes') || '';
+  var refDia  = _ss.getItem('n31_ref_dia')  || '';
+  var refAnio = _ss.getItem('n31_ref_anio') || '';
+  var refStr  = _ss.getItem('n31_ref_str')  || '';
+  var periodo = _ss.getItem('n31_periodo')  || '';
 
   // Actualizar calendario
   var elMes  = document.getElementById('cal-mes');
@@ -2510,7 +2512,7 @@ function _buildPrintHtml(tableId, title) {
   }
 
   // Actualizar stats de segmento
-  var segRaw = _ss.getItem('ggr_seg');
+  var segRaw = _ss.getItem('n31_seg');
   if(segRaw){
     try{
       var seg = JSON.parse(segRaw), se = seg.se, T = seg.T || 1;
@@ -2650,7 +2652,7 @@ function printPe(){
 // ── Inicialización desde localStorage (web app mode) ──────────────────
 (function(){
   var _ss = window.localStorage;
-  if(!_ss.getItem('ggr_data')){
+  if(!_ss.getItem('n31_data')){
     // Sin datos: mostrar aviso y redirigir
     document.body.insertAdjacentHTML('beforeend',
       '<div id="no-data-overlay" style="position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Inter,sans-serif;color:#e2e8f0;">'
@@ -2670,11 +2672,11 @@ function printPe(){
   );
 
   // Fecha de referencia
-  var refMes = _ss.getItem('ggr_ref_mes') || '';
-  var refDia  = _ss.getItem('ggr_ref_dia')  || '';
-  var refAnio = _ss.getItem('ggr_ref_anio') || '';
-  var refStr  = _ss.getItem('ggr_ref_str')  || '';
-  var periodo = _ss.getItem('ggr_periodo')  || '';
+  var refMes = _ss.getItem('n31_ref_mes') || '';
+  var refDia  = _ss.getItem('n31_ref_dia')  || '';
+  var refAnio = _ss.getItem('n31_ref_anio') || '';
+  var refStr  = _ss.getItem('n31_ref_str')  || '';
+  var periodo = _ss.getItem('n31_periodo')  || '';
 
   // Actualizar calendario
   var elMes  = document.getElementById('cal-mes');
@@ -2704,7 +2706,7 @@ function printPe(){
   }
 
   // Actualizar stats de segmento
-  var segRaw = _ss.getItem('ggr_seg');
+  var segRaw = _ss.getItem('n31_seg');
   if(segRaw){
     try{
       var seg = JSON.parse(segRaw), se = seg.se, T = seg.T || 1;
@@ -2988,7 +2990,7 @@ function printAl(){
 // ── Inicialización desde localStorage (web app mode) ──────────────────
 (function(){
   var _ss = window.localStorage;
-  if(!_ss.getItem('ggr_data')){
+  if(!_ss.getItem('n31_data')){
     // Sin datos: mostrar aviso y redirigir
     document.body.insertAdjacentHTML('beforeend',
       '<div id="no-data-overlay" style="position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Inter,sans-serif;color:#e2e8f0;">'
@@ -3008,11 +3010,11 @@ function printAl(){
   );
 
   // Fecha de referencia
-  var refMes = _ss.getItem('ggr_ref_mes') || '';
-  var refDia  = _ss.getItem('ggr_ref_dia')  || '';
-  var refAnio = _ss.getItem('ggr_ref_anio') || '';
-  var refStr  = _ss.getItem('ggr_ref_str')  || '';
-  var periodo = _ss.getItem('ggr_periodo')  || '';
+  var refMes = _ss.getItem('n31_ref_mes') || '';
+  var refDia  = _ss.getItem('n31_ref_dia')  || '';
+  var refAnio = _ss.getItem('n31_ref_anio') || '';
+  var refStr  = _ss.getItem('n31_ref_str')  || '';
+  var periodo = _ss.getItem('n31_periodo')  || '';
 
   // Actualizar calendario
   var elMes  = document.getElementById('cal-mes');
@@ -3042,7 +3044,7 @@ function printAl(){
   }
 
   // Actualizar stats de segmento
-  var segRaw = _ss.getItem('ggr_seg');
+  var segRaw = _ss.getItem('n31_seg');
   if(segRaw){
     try{
       var seg = JSON.parse(segRaw), se = seg.se, T = seg.T || 1;
@@ -3159,8 +3161,8 @@ function dlCSV(headers, rows, filename) {
 
 // ── Exportar Excel GGR ────────────────────────────────────────────────────
 function exportGGRExcel(){
-  const per=(localStorage.getItem('ggr_periodo')||'').replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
-  const req=indexedDB.open('ggr_idb',1);
+  const per=(localStorage.getItem('n31_periodo')||'').replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
+  const req=indexedDB.open('n31_idb',1);
   req.onupgradeneeded=e=>e.target.result.createObjectStore('xlsx');
   req.onsuccess=e=>{
     const db=e.target.result;
@@ -3295,7 +3297,7 @@ window.addEventListener('DOMContentLoaded', function(){ setTimeout(loadFromGitHu
 // ── Inicialización desde localStorage (web app mode) ──────────────────
 (function(){
   var _ss = window.localStorage;
-  if(!_ss.getItem('ggr_data')){
+  if(!_ss.getItem('n31_data')){
     // Sin datos: mostrar aviso y redirigir
     document.body.insertAdjacentHTML('beforeend',
       '<div id="no-data-overlay" style="position:fixed;inset:0;background:#0f172a;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Inter,sans-serif;color:#e2e8f0;">'
@@ -3315,11 +3317,11 @@ window.addEventListener('DOMContentLoaded', function(){ setTimeout(loadFromGitHu
   );
 
   // Fecha de referencia
-  var refMes = _ss.getItem('ggr_ref_mes') || '';
-  var refDia  = _ss.getItem('ggr_ref_dia')  || '';
-  var refAnio = _ss.getItem('ggr_ref_anio') || '';
-  var refStr  = _ss.getItem('ggr_ref_str')  || '';
-  var periodo = _ss.getItem('ggr_periodo')  || '';
+  var refMes = _ss.getItem('n31_ref_mes') || '';
+  var refDia  = _ss.getItem('n31_ref_dia')  || '';
+  var refAnio = _ss.getItem('n31_ref_anio') || '';
+  var refStr  = _ss.getItem('n31_ref_str')  || '';
+  var periodo = _ss.getItem('n31_periodo')  || '';
 
   // Actualizar calendario
   var elMes  = document.getElementById('cal-mes');
@@ -3349,7 +3351,7 @@ window.addEventListener('DOMContentLoaded', function(){ setTimeout(loadFromGitHu
   }
 
   // Actualizar stats de segmento
-  var segRaw = _ss.getItem('ggr_seg');
+  var segRaw = _ss.getItem('n31_seg');
   if(segRaw){
     try{
       var seg = JSON.parse(segRaw), se = seg.se, T = seg.T || 1;
@@ -3730,17 +3732,17 @@ async function ggrHandleXlsx(file) {
     const buf = await file.arrayBuffer();
     const rows = await parseXlsxRows(buf);
     const res  = processWorkbook(rows);
-    localStorage.setItem('ggr_data',       JSON.stringify(res.DATA));
-    localStorage.setItem('ggr_data_me',    JSON.stringify(res.DATA_ME));
-    localStorage.setItem('ggr_data_yr',    JSON.stringify(res.DATA_YR));
-    localStorage.setItem('ggr_data_ab_me', JSON.stringify(res.DATA_AB_ME));
-    localStorage.setItem('ggr_data_co',    JSON.stringify(res.DATA_CO));
-    localStorage.setItem('ggr_ref_mes',    res.refMes);
-    localStorage.setItem('ggr_ref_dia',    res.refDia);
-    localStorage.setItem('ggr_ref_anio',   res.refAnio);
-    localStorage.setItem('ggr_ref_str',    res.refStr);
-    localStorage.setItem('ggr_periodo',    res.periodo);
-    localStorage.setItem('ggr_seg',        JSON.stringify({se:res.segSe,T:res.T}));
+    localStorage.setItem('n31_data',       JSON.stringify(res.DATA));
+    localStorage.setItem('n31_data_me',    JSON.stringify(res.DATA_ME));
+    localStorage.setItem('n31_data_yr',    JSON.stringify(res.DATA_YR));
+    localStorage.setItem('n31_data_ab_me', JSON.stringify(res.DATA_AB_ME));
+    localStorage.setItem('n31_data_co',    JSON.stringify(res.DATA_CO));
+    localStorage.setItem('n31_ref_mes',    res.refMes);
+    localStorage.setItem('n31_ref_dia',    res.refDia);
+    localStorage.setItem('n31_ref_anio',   res.refAnio);
+    localStorage.setItem('n31_ref_str',    res.refStr);
+    localStorage.setItem('n31_periodo',    res.periodo);
+    localStorage.setItem('n31_seg',        JSON.stringify({se:res.segSe,T:res.T}));
     // Actualizar calendario inmediatamente antes del reload
     var cm=document.getElementById('cal-mes'),cd=document.getElementById('cal-dia'),ca=document.getElementById('cal-anio');
     if(cm)cm.textContent=res.refMes; if(cd)cd.textContent=res.refDia; if(ca)ca.textContent=res.refAnio;
