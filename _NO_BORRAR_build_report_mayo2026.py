@@ -583,6 +583,9 @@ if me_keys:
 
 _ref_str = REF.strftime('%d-%m-%Y')
 html = re.sub(r'<title>[^<]+</title>', f'<title>Bitácora GGR a {_ref_str}</title>', html, count=1)
+# Reemplazar REF_DATE con la fecha real del corte para que calcD coincida con dNat en alertas
+_ref_iso = REF.strftime('%Y-%m-%d')
+html = re.sub(r'const REF_DATE\s*=\s*new Date\([^)]+\);', f"const REF_DATE = new Date('{_ref_iso}');", html, count=1)
 html = re.sub(r'<span id="periodo-label" style="display:none">[^<]+</span>',
               '<span id="periodo-label" style="display:none">Mayo 2026</span>', html, count=1)
 
