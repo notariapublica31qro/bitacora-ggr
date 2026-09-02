@@ -2826,17 +2826,13 @@ function getAlRows(){
   } else {
     rows = getTabRows(curTab).filter(r=>r.v===true);
   }
-  // Tab Todos: se excluyen las FALTA FINALIZAR cuyo UNICO pendiente es CONCILIAR
-  // (proceso interno de entrega Financiero -> Recepcion, no es urgente).
-  // Las que llevan Banco/Infonavit/Fovissste sin entregar, o traen NOTIF CAT / DIGITALIZAR,
-  // si califican como urgentes y se conservan.
+  // Tab Todos: NO se muestran las FALTA FINALIZAR. Su pendiente (entrega a Banco/
+  // Infonavit/Fovissste, o conciliacion interna) no depende del abogado sino de otras
+  // areas, asi que no debe inflar el total de urgentes.
+  // Siguen visibles en sus sub-botones Bancos / Infonavit / Fovissste.
   if(curTab==='todos') rows=rows.filter(function(r){
     const m=peMap[r.e];
-    if(!m || m.es!=='FALTA FINALIZAR') return true;
-    // Lleva Banco/Infonavit/Fovissste y sigue sin entregarse a su institucion: urgente
-    if(bancosInfoFoviEscs.has(r.e)) return true;
-    // Unico pendiente CONCILIAR (entrega interna Financiero -> Recepcion): no urgente
-    return String(m.tr||'').trim().toUpperCase()!=='CONCILIAR';
+    return !m || m.es!=='FALTA FINALIZAR';
   });
   return rows
     .filter(r=>!pieAbKey||r.ab===pieAbKey)
