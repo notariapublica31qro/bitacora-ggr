@@ -832,6 +832,12 @@ function setSectionCollapsed(secId,collapsed){
     el.classList.toggle('sec-hidden',collapsed);
     el=el.nextElementSibling;
   }
+  // Los comentarios (textarea) medidos mientras la seccion estaba oculta quedan en 0px de alto: remedir al expandir
+  if(!collapsed){
+    setTimeout(function(){
+      try{ document.querySelectorAll('textarea[data-cm-key]').forEach(function(t){ cmResize(t); }); }catch(e){}
+    },0);
+  }
   // Los canvas dibujados mientras la seccion estaba oculta quedan en 0px: redibujar al expandir
   if(!collapsed && secId==='sec-estatus'){
     setTimeout(function(){
@@ -1655,6 +1661,10 @@ function setCm(key, val) {
   try { saveCommentsDebounced(); } catch(e) {}
 }
 function cmResize(el) {
+  if(!el) return;
+  // Si la celda esta oculta (seccion colapsada) scrollHeight vale 0 y la dejaria en 0px.
+  // Se remide al expandir la seccion (ver setSectionCollapsed).
+  if(el.offsetParent === null) return;
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
 }
