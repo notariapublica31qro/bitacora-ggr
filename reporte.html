@@ -933,8 +933,9 @@ function updateKPIs(abKey) {
     const ntAll = peAll.filter(r => !r.td).length;
     // Reescribir kpi-pend-td preservando IDs kpi-tras-val y kpi-notr-val
     document.getElementById('kpi-pend-td').innerHTML = `<span style="font-size:.65rem;letter-spacing:.18em;visibility:hidden;">·</span><span>Si TD <strong id="kpi-tras-val" style="color:#e2e8f0;font-size:.82rem;font-weight:800;">${trAll}</strong></span><span>No TD <strong id="kpi-notr-val" style="color:#e2e8f0;font-size:.82rem;font-weight:800;">${ntAll}</strong></span>`;
-    const alertSet = new Set();
-    alertaEscs.forEach(e=>alertSet.add(e));
+    // La tarjeta URGENTES cuenta EXACTAMENTE lo que lista la tabla (pestana Todos),
+    // para que nunca puedan diferir entre si.
+    const alertSet = new Set(getTabRows('todos').map(r=>r.e));
     const alrtPct = +((alertSet.size/T)*100).toFixed(1);
     document.getElementById('kpi-alrt-val').textContent = alertSet.size.toLocaleString();
     document.getElementById('kpi-alrt-pct').innerHTML = '<span>'+alrtPct+'</span><span style="display:inline-block;width:0;overflow:visible;">%</span>';
@@ -962,9 +963,8 @@ function updateKPIs(abKey) {
   const trPct = peAb.length ? +((trAb/peAb.length)*100).toFixed(1) : 0;
   const ntPct = peAb.length ? +((ntAb/peAb.length)*100).toFixed(1) : 0;
   document.getElementById('kpi-pend-td').innerHTML = `<span style="font-size:.65rem;letter-spacing:.18em;visibility:hidden;">·</span><span>Si TD <strong id="kpi-tras-val" style="color:#e2e8f0;font-size:.82rem;font-weight:800;">${trAb}</strong></span><span>No TD <strong id="kpi-notr-val" style="color:#e2e8f0;font-size:.82rem;font-weight:800;">${ntAb}</strong></span>`;
-  const alertAb = new Set();
-  ['td','rpp45','firmas','rpp90solo','bancos90','infonavit90','fovissste90'].forEach(k=>(DATA.al[k]||[]).filter(r=>r.ab===abKey).forEach(r=>alertAb.add(r.e)));
-  getNotifcatRows().filter(r=>r.ab===abKey).forEach(r=>alertAb.add(r.e));
+  // Mismo universo que la tabla URGENTES, filtrado por abogado
+  const alertAb = new Set(getTabRows('todos').filter(r=>r.ab===abKey).map(r=>r.e));
   const alrtAbPct = total ? +((alertAb.size/T)*100).toFixed(1) : 0;
   document.getElementById('kpi-alrt-val').textContent = alertAb.size.toLocaleString();
   document.getElementById('kpi-alrt-pct').innerHTML = '<span>'+alrtAbPct+'</span><span style="display:inline-block;width:0;overflow:visible;">%</span>';
