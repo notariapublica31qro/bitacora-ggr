@@ -3207,25 +3207,11 @@ const META_RING = {
   JLGP:      {total: 3,   tras: 0,   ntr: 3}
 };
 function getMostRecentMonth(){
-  // Mes corriente: prefiere el mes de REF_DATE (fecha de corte) si tiene datos;
-  // si no, regresa al último mes con datos > 0. Resetea cada mes cuando hay actividad.
-  if(typeof DATA_ME === 'undefined') return null;
-  if(typeof REF_DATE !== 'undefined'){
-    const yRef = String(REF_DATE.getFullYear());
-    const mRef = REF_DATE.getMonth();
-    if(DATA_ME[yRef] && DATA_ME[yRef][mRef] > 0){
-      return { year: yRef, mIdx: mRef };
-    }
-  }
-  // Fallback: último mes con > 0 escrituras
-  const years = Object.keys(DATA_ME).sort().reverse();
-  for(const y of years){
-    const arr = DATA_ME[y];
-    for(let i = arr.length - 1; i >= 0; i--){
-      if(arr[i] > 0) return {year: y, mIdx: i};
-    }
-  }
-  return null;
+  // Mes corriente = SIEMPRE el mes de REF_DATE (fecha de corte del reporte).
+  // Sin fallback al ultimo mes con datos: al iniciar un mes nuevo el anillo
+  // arranca en 0% y sube conforme se firman escrituras en ese mes.
+  if(typeof REF_DATE === 'undefined') return null;
+  return { year: String(REF_DATE.getFullYear()), mIdx: REF_DATE.getMonth() };
 }
 // Cuenta escrituras del mes (year/mIdx) por abogado, separadas por traslativa/no-traslativa.
 // Itera DATA.pe + DATA_CO porque ahí están todas las escrituras con flag td.
@@ -3259,8 +3245,8 @@ function updateMetaRing(){
   let num = 0;
   if(ab && typeof DATA_AB_ME !== 'undefined' && DATA_AB_ME[ab] && DATA_AB_ME[ab][year]){
     num = DATA_AB_ME[ab][year][mIdx] || 0;
-  } else {
-    num = DATA_ME[year][mIdx] || 0;
+  } else if(typeof DATA_ME !== 'undefined'){
+    num = (DATA_ME[year] || [])[mIdx] || 0;
   }
   if(fg && pctEl){
     const pct = metaObj.total > 0 ? Math.min(100, Math.round((num / metaObj.total) * 100)) : 0;
