@@ -430,10 +430,11 @@ function processWorkbook(rows){
     const excep=isTras&&opU.includes('APLICACION DE BIENES')&&isDt(catDigAl)&&!isDt(tdPago);
     if(isTras&&!isDt(tdPago)&&!excep){const dh=diasHabiles(feD,REF);if(dh>15)alTd.push({...ial,li:15,v:true});else if(dh>=9&&dh<15)alTdPv.push({...ial,li:15,v:false,d:dNat});}
     const rppEnt=r['RPP. Entrada a RPP Testimonio'],rppDigEnt=r['RPP. Digitalización Entrada RPP'],rppEntered=isDt(rppEnt)||isDt(rppDigEnt);
-    if(esStr!=='EN RPP'&&!rppEntered&&dNat>45)alRpp45.push({...ial,li:45});
+    // FALTA FINALIZAR ya paso el RPP o el RPP no le aplica: su pendiente es CONCILIAR/DIGITALIZAR/ENVIAR, no el registro
+    if(esStr!=='EN RPP'&&esStr!=='FALTA FINALIZAR'&&!rppEntered&&dNat>45)alRpp45.push({...ial,li:45});
     if(!isDt(r['ESC. Entrega Firmas Completas'])&&dNat>60)alFirmas.push({...ial,li:60});
     const rppTerm=isDt(r['RPP. Regreso de RPP Testimonio'])||isDt(r['RPP. Captura Dato Inscripción RPP']);
-    if(!rppTerm&&!isBa&&!isInfo&&!isFovi){if(isTras&&dNat>90)alRpp90solo.push({...ial,li:90});else if(!isTras&&dNat>30)alRpp90solo.push({...ial,li:30});}
+    if(!rppTerm&&esStr!=='FALTA FINALIZAR'&&!isBa&&!isInfo&&!isFovi){if(isTras&&dNat>90)alRpp90solo.push({...ial,li:90});else if(!isTras&&dNat>30)alRpp90solo.push({...ial,li:30});}
     if(isBa&&dNat>150)alBancos90.push({...ial,li:150});
     if(isInfo&&dNat>150)alInfo90.push({...ial,li:150});
     if(isFovi&&dNat>150)alFovi90.push({...ial,li:150});
