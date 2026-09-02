@@ -486,6 +486,56 @@ th.col-tr, td.col-tr{width:240px;text-align:center;font-size:.84rem;font-weight:
 </div>
 
 
+<!-- EXPEDIENTES -->
+<div id="sec-ex" class="sec" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleSection('sec-ex')"><span><span class="sec-emoji">📂</span>Expedientes</span><span class="sec-chev">▾</span></div>
+<div class="seg-btns">
+  <button id="ex-btn-all"  class="sg-btn on" onclick="setExTr('')">Todos<span class="vcnt" id="cnt-ex-all">0</span></button>
+  <button id="ex-btn-no"   class="sg-btn"    onclick="setExTr('no')">No Traslativas<span class="vcnt" id="cnt-ex-no">0</span></button>
+  <button id="ex-btn-tras" class="sg-btn"    onclick="setExTr('tras')">Traslativas<span class="vcnt" id="cnt-ex-tras">0</span></button>
+</div>
+<div id="ex-sel-outer" style="position:relative;"><div class="twrap"><table id="ex-table" style="table-layout:fixed;width:100%;"><thead><tr id="ex-thead"></tr></thead><tbody id="ex-tbody"></tbody></table></div></div>
+<div id="ex-pag" class="pag"></div>
+
+<!-- PENDIENTES (primero) -->
+<div id="sec-pe" class="sec" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleSection('sec-pe')"><span><span class="sec-emoji">📝</span>Escrituras</span><span class="sec-chev">▾</span></div>
+<div class="seg-btns">
+  <button id="sg-btn-all"       class="sg-btn on"  onclick="setPeSg('')">Todos<span class="vcnt" id="cnt-pe-all">0</span></button>
+  <button id="sg-btn-ftd"       class="sg-btn"     onclick="setPeSg('ftd')">Falta TD<span class="vcnt" id="cnt-pe-ftd">0</span></button>
+  <button id="sg-btn-fcat"      class="sg-btn"     onclick="setPeSg('fcat')">Falta Notif Cat<span class="vcnt" id="cnt-pe-fcat">0</span></button>
+  <button id="sg-btn-fci"       class="sg-btn"     onclick="setPeSg('fci')">Falta Cierre<span class="vcnt" id="cnt-pe-fci">0</span></button>
+  <button id="sg-btn-notr_rpp"  class="sg-btn"     onclick="setPeSg('notr_rpp')">Falta RPP<span class="vcnt" id="cnt-pe-notr_rpp">0</span></button>
+  <button id="sg-btn-enrpp"     class="sg-btn"     onclick="setPeSg('enrpp')">En RPP<span class="vcnt" id="cnt-pe-enrpp">0</span></button>
+  <button id="sg-btn-fo"        class="sg-btn"     onclick="setPeSg('fo')">Foráneas<span class="vcnt" id="cnt-pe-fo">0</span></button>
+  <button id="sg-btn-ba"        class="sg-btn"     onclick="setPeSg('ba')">Bancos<span class="vcnt" id="cnt-pe-ba">0</span></button>
+  <button id="sg-btn-infonavit" class="sg-btn"     onclick="setPeSg('infonavit')">Infonavit<span class="vcnt" id="cnt-pe-infonavit">0</span></button>
+  <button id="sg-btn-fovissste" class="sg-btn"     onclick="setPeSg('fovissste')">Fovissste<span class="vcnt" id="cnt-pe-fovissste">0</span></button>
+  <button id="sg-btn-ff"        class="sg-btn"     onclick="setPeSg('ff')">Finalizar<span class="vcnt" id="cnt-pe-ff">0</span></button>
+</div>
+<div class="twrap"><table id="pe-table" style="table-layout:fixed;"><thead><tr id="pe-thead"></tr></thead><tbody id="pe-tbody"></tbody></table></div>
+
+<!-- INDICADORES (alertas, segundo) -->
+<div id="sec-al" class="sec" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleSection('sec-al')"><span><span class="sec-emoji">🚨</span>URGENTES</span><span class="sec-chev">▾</span></div>
+<div class="tabs-vbtns-wrapper">
+<div class="tabs">
+  <div class="tab on" data-t="todos"       onclick="switchTab('todos')">Todos <span class="tcnt" id="cnt-todos"></span></div>
+  <div class="tab"    data-t="firmas"      onclick="switchTab('firmas')">Folios >30 <span class="tcnt" id="cnt-firmas"></span></div>
+  <div class="tab"    data-t="td"          onclick="switchTab('td')">TD Vencido >15 <span class="tcnt" id="cnt-td"></span></div>
+  <div class="tab"    data-t="notifcat"    onclick="switchTab('notifcat')">Notif Cat >25 <span class="tcnt" id="cnt-notifcat"></span></div>
+  <div class="tab"    data-t="rpp45"       onclick="switchTab('rpp45')">Entrada RPP >30 <span class="tcnt" id="cnt-rpp45"></span></div>
+  <div class="tab"    data-t="rpp90solo"   onclick="switchTab('rpp90solo')">Inscripción RPP >60 <span class="tcnt" id="cnt-rpp90solo"></span></div>
+  <div class="tab"    data-t="bancos90"    onclick="switchTab('bancos90')">Bancos >90 <span class="tcnt" id="cnt-bancos90"></span></div>
+  <div class="tab"    data-t="infonavit90" onclick="switchTab('infonavit90')">Infonavit >90 <span class="tcnt" id="cnt-infonavit90"></span></div>
+  <div class="tab"    data-t="fovissste90" onclick="switchTab('fovissste90')">Fovissste >90 <span class="tcnt" id="cnt-fovissste90"></span></div>
+</div>
+<div class="al-v-btns" style="margin-bottom:9px;">
+  <button id="al-v-btn-all" class="al-v-btn on" onclick="setAlV('')">Todas<span class="vcnt" id="cnt-v-all">0</span></button>
+  <button id="al-v-btn-pv"  class="al-v-btn"    onclick="setAlV('false')">Por Vencer<span class="vcnt" id="cnt-v-pv">0</span></button>
+  <button id="al-v-btn-ve"  class="al-v-btn"    onclick="setAlV('true')">Vencidas<span class="vcnt" id="cnt-v-ve">0</span></button>
+</div>
+</div>
+<div class="twrap"><table id="al-table" style="table-layout:fixed;width:100%;"><thead><tr id="al-thead"></tr></thead><tbody id="al-tbody"></tbody></table></div>
+
+
 <div id="sec-estatus" class="sec" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleSection('sec-estatus')"><span><span class="sec-emoji">📈</span>Estatus</span><span class="sec-chev">▾</span></div>
 <div class="charts-row">
   <!-- PIE: izquierda -->
@@ -573,56 +623,6 @@ th.col-tr, td.col-tr{width:240px;text-align:center;font-size:.84rem;font-weight:
     </div>
   </div>
 </div>
-
-
-<!-- PENDIENTES (primero) -->
-<div id="sec-pe" class="sec" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleSection('sec-pe')"><span><span class="sec-emoji">📝</span>Escrituras</span><span class="sec-chev">▾</span></div>
-<div class="seg-btns">
-  <button id="sg-btn-all"       class="sg-btn on"  onclick="setPeSg('')">Todos<span class="vcnt" id="cnt-pe-all">0</span></button>
-  <button id="sg-btn-ftd"       class="sg-btn"     onclick="setPeSg('ftd')">Falta TD<span class="vcnt" id="cnt-pe-ftd">0</span></button>
-  <button id="sg-btn-fcat"      class="sg-btn"     onclick="setPeSg('fcat')">Falta Notif Cat<span class="vcnt" id="cnt-pe-fcat">0</span></button>
-  <button id="sg-btn-fci"       class="sg-btn"     onclick="setPeSg('fci')">Falta Cierre<span class="vcnt" id="cnt-pe-fci">0</span></button>
-  <button id="sg-btn-notr_rpp"  class="sg-btn"     onclick="setPeSg('notr_rpp')">Falta RPP<span class="vcnt" id="cnt-pe-notr_rpp">0</span></button>
-  <button id="sg-btn-enrpp"     class="sg-btn"     onclick="setPeSg('enrpp')">En RPP<span class="vcnt" id="cnt-pe-enrpp">0</span></button>
-  <button id="sg-btn-fo"        class="sg-btn"     onclick="setPeSg('fo')">Foráneas<span class="vcnt" id="cnt-pe-fo">0</span></button>
-  <button id="sg-btn-ba"        class="sg-btn"     onclick="setPeSg('ba')">Bancos<span class="vcnt" id="cnt-pe-ba">0</span></button>
-  <button id="sg-btn-infonavit" class="sg-btn"     onclick="setPeSg('infonavit')">Infonavit<span class="vcnt" id="cnt-pe-infonavit">0</span></button>
-  <button id="sg-btn-fovissste" class="sg-btn"     onclick="setPeSg('fovissste')">Fovissste<span class="vcnt" id="cnt-pe-fovissste">0</span></button>
-  <button id="sg-btn-ff"        class="sg-btn"     onclick="setPeSg('ff')">Finalizar<span class="vcnt" id="cnt-pe-ff">0</span></button>
-</div>
-<div class="twrap"><table id="pe-table" style="table-layout:fixed;"><thead><tr id="pe-thead"></tr></thead><tbody id="pe-tbody"></tbody></table></div>
-
-<!-- EXPEDIENTES -->
-<div id="sec-ex" class="sec" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleSection('sec-ex')"><span><span class="sec-emoji">📂</span>Expedientes</span><span class="sec-chev">▾</span></div>
-<div class="seg-btns">
-  <button id="ex-btn-all"  class="sg-btn on" onclick="setExTr('')">Todos<span class="vcnt" id="cnt-ex-all">0</span></button>
-  <button id="ex-btn-no"   class="sg-btn"    onclick="setExTr('no')">No Traslativas<span class="vcnt" id="cnt-ex-no">0</span></button>
-  <button id="ex-btn-tras" class="sg-btn"    onclick="setExTr('tras')">Traslativas<span class="vcnt" id="cnt-ex-tras">0</span></button>
-</div>
-<div id="ex-sel-outer" style="position:relative;"><div class="twrap"><table id="ex-table" style="table-layout:fixed;width:100%;"><thead><tr id="ex-thead"></tr></thead><tbody id="ex-tbody"></tbody></table></div></div>
-<div id="ex-pag" class="pag"></div>
-
-<!-- INDICADORES (alertas, segundo) -->
-<div id="sec-al" class="sec" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleSection('sec-al')"><span><span class="sec-emoji">🚨</span>URGENTES</span><span class="sec-chev">▾</span></div>
-<div class="tabs-vbtns-wrapper">
-<div class="tabs">
-  <div class="tab on" data-t="todos"       onclick="switchTab('todos')">Todos <span class="tcnt" id="cnt-todos"></span></div>
-  <div class="tab"    data-t="firmas"      onclick="switchTab('firmas')">Folios >30 <span class="tcnt" id="cnt-firmas"></span></div>
-  <div class="tab"    data-t="td"          onclick="switchTab('td')">TD Vencido >15 <span class="tcnt" id="cnt-td"></span></div>
-  <div class="tab"    data-t="notifcat"    onclick="switchTab('notifcat')">Notif Cat >25 <span class="tcnt" id="cnt-notifcat"></span></div>
-  <div class="tab"    data-t="rpp45"       onclick="switchTab('rpp45')">Entrada RPP >30 <span class="tcnt" id="cnt-rpp45"></span></div>
-  <div class="tab"    data-t="rpp90solo"   onclick="switchTab('rpp90solo')">Inscripción RPP >60 <span class="tcnt" id="cnt-rpp90solo"></span></div>
-  <div class="tab"    data-t="bancos90"    onclick="switchTab('bancos90')">Bancos >90 <span class="tcnt" id="cnt-bancos90"></span></div>
-  <div class="tab"    data-t="infonavit90" onclick="switchTab('infonavit90')">Infonavit >90 <span class="tcnt" id="cnt-infonavit90"></span></div>
-  <div class="tab"    data-t="fovissste90" onclick="switchTab('fovissste90')">Fovissste >90 <span class="tcnt" id="cnt-fovissste90"></span></div>
-</div>
-<div class="al-v-btns" style="margin-bottom:9px;">
-  <button id="al-v-btn-all" class="al-v-btn on" onclick="setAlV('')">Todas<span class="vcnt" id="cnt-v-all">0</span></button>
-  <button id="al-v-btn-pv"  class="al-v-btn"    onclick="setAlV('false')">Por Vencer<span class="vcnt" id="cnt-v-pv">0</span></button>
-  <button id="al-v-btn-ve"  class="al-v-btn"    onclick="setAlV('true')">Vencidas<span class="vcnt" id="cnt-v-ve">0</span></button>
-</div>
-</div>
-<div class="twrap"><table id="al-table" style="table-layout:fixed;width:100%;"><thead><tr id="al-thead"></tr></thead><tbody id="al-tbody"></tbody></table></div>
 
 
 <div class="report-footer">
@@ -823,16 +823,35 @@ function clearEtapaFilter() {
   try{drawBar();}catch(e){}
   try{drawLine();}catch(e){}
 }
-function toggleSection(secId){
+function setSectionCollapsed(secId,collapsed){
   var sec=document.getElementById(secId);
   if(!sec)return;
-  var collapsed=sec.classList.toggle('sec-collapsed');
+  sec.classList.toggle('sec-collapsed',collapsed);
   var el=sec.nextElementSibling;
   while(el&&!el.classList.contains('sec')&&!el.classList.contains('report-footer')){
     el.classList.toggle('sec-hidden',collapsed);
     el=el.nextElementSibling;
   }
+  // Los canvas dibujados mientras la seccion estaba oculta quedan en 0px: redibujar al expandir
+  if(!collapsed && secId==='sec-estatus'){
+    setTimeout(function(){
+      try{ if(typeof drawPie==='function') drawPie(null, typeof pieAbKey!=='undefined'?pieAbKey:''); }catch(e){}
+      try{ if(typeof drawLine==='function') drawLine(); }catch(e){}
+      try{ if(typeof drawBar==='function') drawBar(); }catch(e){}
+    },40);
+  }
 }
+function toggleSection(secId){
+  var sec=document.getElementById(secId);
+  if(!sec)return;
+  setSectionCollapsed(secId, !sec.classList.contains('sec-collapsed'));
+}
+// Estado inicial: todas las secciones colapsadas excepto EXPEDIENTES
+function applyDefaultCollapse(){
+  ['sec-estatus','sec-pe','sec-al'].forEach(function(id){ setSectionCollapsed(id,true); });
+  setSectionCollapsed('sec-ex',false);
+}
+window.addEventListener('DOMContentLoaded',function(){ setTimeout(applyDefaultCollapse,0); });
 function scrollToSection(id) {
   const el = document.getElementById(id);
   if (!el) return;
