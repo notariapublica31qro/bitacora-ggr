@@ -1765,13 +1765,14 @@ document.addEventListener('keydown', function(e){
     var lastInput = allInputs[allInputs.length-1];
     if(active === lastInput){
       e.preventDefault();
-      EX_DATA.push({xp:'',cl:'',op:'',td:'',ac:'',mu:'',es:'',tr:''});
+      var _hasEmpty = EX_DATA.some(function(r){return !r.xp&&!r.cl&&!r.op&&!r.td&&!r.ac&&!r.mu&&!r.es&&!r.tr;});
+      if(!_hasEmpty) EX_DATA.push({xp:'',cl:'',op:'',td:'',ac:'',mu:'',es:'',tr:''});
       renderEx();
-      // Enfocar la primera celda de la nueva última fila
+      // Enfocar la primera celda de la fila de entrada nueva (ahora arriba)
       requestAnimationFrame(function(){
         var newRows = document.querySelectorAll('#ex-tbody tr');
         if(!newRows.length) return;
-        var firstInput = newRows[newRows.length-1].querySelector('input,textarea');
+        var firstInput = newRows[0].querySelector('input,textarea');
         if(firstInput) firstInput.focus();
       });
     }
@@ -2083,7 +2084,7 @@ function pePrev(){} function peNext(){}
 let exTrFilter = '';
 let exPage = 0;
 const EX_PAGE_SIZE = 20;
-let exSortCol = 'xp', exSortDir = 'asc';
+let exSortCol = 'xp', exSortDir = 'desc';
 
 function setExTr(f) {
   exTrFilter = f;
@@ -2144,8 +2145,8 @@ function renderEx() {
     var aEmpty = !EX_DATA[a].xp && !EX_DATA[a].cl && !EX_DATA[a].op;
     var bEmpty = !EX_DATA[b].xp && !EX_DATA[b].cl && !EX_DATA[b].op;
     if(aEmpty && bEmpty) return a - b;
-    if(aEmpty) return 1;
-    if(bEmpty) return -1;
+    if(aEmpty) return -1;
+    if(bEmpty) return 1;
     if(!va && !vb) return 0;
     if(!va) return 1;
     if(!vb) return -1;
@@ -2191,7 +2192,7 @@ function renderEx() {
     return !_escXp.has(r.xp.trim());
   });
 
-  // Colapsar filas vacías: mostrar máximo 1 al final
+  // Colapsar filas vacías: mostrar máximo 1 (queda arriba = fila de entrada nueva)
   var _seenEmpty = false;
   sortedIdx = sortedIdx.filter(function(i){
     var r = EX_DATA[i];
