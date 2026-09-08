@@ -403,7 +403,6 @@ th.col-tr, td.col-tr{width:240px;text-align:center;font-size:.84rem;font-weight:
 #ex-btn-all{background:#6c8ef5;border-color:#6c8ef5;color:#fff;}#ex-btn-all.on{background:#f5e49a;border-color:#6c8ef5;color:#6c8ef5;}
 #ex-btn-tras{background:#ef4444;border-color:#ef4444;color:#fff;}#ex-btn-tras.on{background:#f5e49a;border-color:transparent;color:#ef4444;}
 #ex-btn-no{background:#f59e0b;border-color:#f59e0b;color:#fff;}#ex-btn-no.on{background:#f5e49a;border-color:transparent;color:#f59e0b;}
-#ex-btn-add{background:#16a34a;border-color:#16a34a;color:#fff;}#ex-btn-add:hover{background:#15803d;border-color:#15803d;}
 
 .mini-tbl-wrap{flex:0 0 215px;display:flex;flex-direction:column;min-height:0;}
 .mini-tbl-title{font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
@@ -493,7 +492,6 @@ th.col-tr, td.col-tr{width:240px;text-align:center;font-size:.84rem;font-weight:
   <button id="ex-btn-all"  class="sg-btn on" onclick="setExTr('')">Todos<span class="vcnt" id="cnt-ex-all">0</span></button>
   <button id="ex-btn-no"   class="sg-btn"    onclick="setExTr('no')">No Traslativas<span class="vcnt" id="cnt-ex-no">0</span></button>
   <button id="ex-btn-tras" class="sg-btn"    onclick="setExTr('tras')">Traslativas<span class="vcnt" id="cnt-ex-tras">0</span></button>
-  <button id="ex-btn-add"  class="sg-btn"    onclick="exAddRow()" title="Agregar fila de captura arriba">+ Nueva</button>
 </div>
 <div id="ex-sel-outer" style="position:relative;"><div class="twrap"><table id="ex-table" style="table-layout:fixed;width:100%;"><thead><tr id="ex-thead"></tr></thead><tbody id="ex-tbody"></tbody></table></div></div>
 <div id="ex-pag" class="pag"></div>
@@ -1696,7 +1694,7 @@ function exEnsureEmptyRow(){
   EX_DATA.push({xp:'',cl:'',op:'',td:'',ac:'',mu:'',es:'',tr:''});
   return true;
 }
-// Boton "+ Nueva": agrega/enfoca la fila de captura (primera linea)
+// Helper del TAB: agrega/enfoca la fila de captura (primera linea)
 function exAddRow(){
   exEnsureEmptyRow();
   renderEx();
