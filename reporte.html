@@ -3228,8 +3228,13 @@ function exportGGRExcel(){
     get.onsuccess=()=>{
       const b64=get.result;
       if(!b64){alert('Sube el archivo xlsx desde la pantalla inicial para poder descargar el Excel etiquetado.');return;}
-      const wb=XLSX.read(b64,{type:'base64'});
-      XLSX.writeFile(wb,'Bitacora_GGR_etiquetada'+(per?'_'+per:'')+'.xlsx');
+      // Descargar el archivo tal cual se generó (releerlo con XLSX.read perdía los formatos de fecha)
+      const bin=atob(b64),bytes=new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+      const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      const url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download='Bitacora_GGR_etiquetada'+(per?'_'+per:'')+'.xlsx';document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
     };
     get.onerror=()=>alert('Error al leer el archivo. Por favor sube el xlsx nuevamente.');
   };
