@@ -3758,6 +3758,17 @@ function processWorkbook(rows){
   // Reconstruir workbook modificado
   const newWb=XLSX.utils.book_new();
   const newWs=XLSX.utils.aoa_to_sheet(modRows);
+  // Fechas (YYYY-MM-DD) → celdas de fecha reales en Excel (serial + formato dd/mm/yyyy)
+  try{
+    const _rng=XLSX.utils.decode_range(newWs['!ref']);
+    for(let R=1;R<=_rng.e.r;R++)for(let C=0;C<=_rng.e.c;C++){
+      const _a=XLSX.utils.encode_cell({r:R,c:C}),_c=newWs[_a];
+      if(_c&&_c.t==='s'&&/^\d{4}-\d{2}-\d{2}$/.test(_c.v)){
+        const y=+_c.v.slice(0,4),m=+_c.v.slice(5,7),d=+_c.v.slice(8,10);
+        newWs[_a]={t:'n',v:Math.round((Date.UTC(y,m-1,d)-Date.UTC(1899,11,30))/86400000),z:'dd/mm/yyyy'};
+      }
+    }
+  }catch(e){console.warn('fechas xlsx:',e);}
   XLSX.utils.book_append_sheet(newWb,newWs,'Bitácora');
   _wb=newWb;
 
