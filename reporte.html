@@ -3220,8 +3220,8 @@ function dlCSV(headers, rows, filename) {
 
 // ── Exportar Excel GGR ────────────────────────────────────────────────────
 function exportGGRExcel(){
-  const per=(localStorage.getItem('n31_periodo')||'').replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
-  const req=indexedDB.open('n31_idb',1);
+  const per=(localStorage.getItem('ggr_periodo')||'').replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
+  const req=indexedDB.open('ggr_idb',1);
   req.onupgradeneeded=e=>e.target.result.createObjectStore('xlsx');
   req.onsuccess=e=>{
     const db=e.target.result;
