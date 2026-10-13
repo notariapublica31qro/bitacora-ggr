@@ -3777,6 +3777,18 @@ function processWorkbook(rows){
       newWs[_a]={t:'n',v:Math.round((Date.UTC(y,m-1,d)-Date.UTC(1899,11,30))/86400000),z:'dd/mm/yyyy'};
     }
   }catch(e){console.warn('fechas xlsx:',e);}
+  // Expediente y Escritura → celdas numéricas (Expediente conserva 2 decimales: 7003.19)
+  try{
+    const _hdr=modRows[0].map(h=>typeof h==='string'?h.trim():h);
+    const _rng2=XLSX.utils.decode_range(newWs['!ref']);
+    [['Expediente','0.00'],['Escritura','0']].forEach(([nm,fmt])=>{
+      const C=_hdr.indexOf(nm); if(C<0)return;
+      for(let R=1;R<=_rng2.e.r;R++){
+        const _a=XLSX.utils.encode_cell({r:R,c:C}),_c=newWs[_a];
+        if(_c&&_c.t==='s'&&/^\s*\d+(\.\d+)?\s*$/.test(_c.v))newWs[_a]={t:'n',v:parseFloat(_c.v),z:fmt};
+      }
+    });
+  }catch(e){console.warn('numeros xlsx:',e);}
   XLSX.utils.book_append_sheet(newWb,newWs,'Bitácora');
   _wb=newWb;
 
